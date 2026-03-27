@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "DELETE",
+    "urlPattern": "/api/resources/[0-9]+"
+  },
+  "response": {
+    "status": 204,
+    "headers": {}
+  }
+}

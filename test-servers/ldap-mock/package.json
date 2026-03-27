@@ -1,0 +1,12 @@
+{
+  "name": "ldap-mock",
+  "version": "1.0.0",
+  "description": "Minimal LDAP server for E2E testing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ldapjs": "^3.0.7"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "grpc-mock",
+  "version": "1.0.0",
+  "description": "gRPC mock server for E2E testing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.0",
+    "@grpc/proto-loader": "^0.7.12"
+  }
+}

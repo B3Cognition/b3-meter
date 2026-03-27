@@ -1,0 +1,10 @@
+{
+  "name": "mqtt-mock",
+  "version": "1.0.0",
+  "description": "Minimal MQTT broker for E2E testing",
+  "main": "broker.js",
+  "scripts": {
+    "start": "node broker.js"
+  },
+  "dependencies": {}
+}

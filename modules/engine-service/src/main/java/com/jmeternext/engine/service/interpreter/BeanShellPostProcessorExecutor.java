@@ -1,0 +1,70 @@
+package com.jmeternext.engine.service.interpreter;
+
+import com.jmeternext.engine.service.plan.PlanNode;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Executes a {@code BeanShellPostProcessor} {@link PlanNode} as a post-processor.
+ *
+ * <p>Delegates to {@link JSR223PostProcessorExecutor} with {@code scriptLanguage}
+ * set to {@code "beanshell"}. If no BeanShell ScriptEngine is available, falls back
+ * to {@code "javascript"}.
+ *
+ * <p>Reads the following properties:
+ * <ul>
+ *   <li>{@code BeanShellPostProcessor.script} — inline BeanShell script</li>
+ *   <li>{@code BeanShellPostProcessor.filename} — external script file</li>
+ *   <li>{@code BeanShellPostProcessor.parameters} — parameters string</li>
+ * </ul>
+ *
+ * <p>Only JDK types are used (Constitution Principle I: framework-free).
+ */
+public final class BeanShellPostProcessorExecutor {
+
+    private static final Logger LOG = Logger.getLogger(BeanShellPostProcessorExecutor.class.getName());
+
+    private BeanShellPostProcessorExecutor() {
+        // utility class -- not instantiable
+    }
+
+    /**
+     * Executes the BeanShell post-processor script described by {@code node}.
+     *
+     * @param node      the BeanShellPostProcessor node; must not be {@code null}
+     * @param result    the most recent sample result; must not be {@code null}
+     * @param variables current VU variable scope; must not be {@code null}
+     */
+    public static void execute(PlanNode node, SampleResult result, Map<String, String> variables) {
+        Objects.requireNonNull(node,      "node must not be null");
+        Objects.requireNonNull(result,    "result must not be null");
+        Objects.requireNonNull(variables, "variables must not be null");
+
+        String script     = node.getStringProp("BeanShellPostProcessor.script", "");
+        String filename   = node.getStringProp("BeanShellPostProcessor.filename", "");
+        String parameters = node.getStringProp("BeanShellPostProcessor.parameters", "");
+
+        // Determine language: try "beanshell" first
+        String language = "beanshell";
+        javax.script.ScriptEngineManager manager = new javax.script.ScriptEngineManager();
+        if (manager.getEngineByName("beanshell") == null
+                && manager.getEngineByName("bsh") == null) {
+            LOG.log(Level.INFO,
+                    "BeanShellPostProcessorExecutor: BeanShell engine not found, falling back to javascript");
+            language = "javascript";
+        }
+
+        // Build a synthetic JSR223PostProcessor node with mapped properties
+        PlanNode jsr223Node = PlanNode.builder("JSR223PostProcessor", node.getTestName())
+                .property("script", script)
+                .property("filename", filename)
+                .property("scriptLanguage", language)
+                .property("parameters", parameters)
+                .build();
+
+        JSR223PostProcessorExecutor.execute(jsr223Node, result, variables);
+    }
+}

@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "PUT",
+    "urlPattern": "/api/resources/[0-9]+",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "updated",
+      "data": {
+        "id": 42,
+        "name": "updated-resource"
+      }
+    }
+  }
+}

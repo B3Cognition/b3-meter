@@ -1,0 +1,412 @@
+/* -----------------------------------------------------------------------
+   ProxyRecorderPanel — proxy recorder configuration and capture list
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* -----------------------------------------------------------------------
+   Header row
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.proxy-recorder__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Status badge
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__status {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.proxy-recorder__status--recording {
+  background: #d4edda;
+  color: #155724;
+  animation: proxy-recorder-pulse 1.5s ease-in-out infinite;
+}
+
+.proxy-recorder__status--idle {
+  background: #e2e3e5;
+  color: #6c757d;
+}
+
+@keyframes proxy-recorder-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* -----------------------------------------------------------------------
+   Configuration section
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__config {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.proxy-recorder__config-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.proxy-recorder__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.proxy-recorder__field label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.proxy-recorder__field input[type='text'],
+.proxy-recorder__field input[type='number'] {
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.proxy-recorder__field input:focus {
+  outline: none;
+  border-color: #4a6fa5;
+}
+
+.proxy-recorder__field input:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.proxy-recorder__field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: unset;
+  flex: unset;
+}
+
+.proxy-recorder__field--checkbox label {
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #444;
+  cursor: pointer;
+}
+
+.proxy-recorder__field--checkbox input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.proxy-recorder__field textarea {
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: monospace;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  resize: vertical;
+  min-height: 52px;
+}
+
+.proxy-recorder__field textarea:focus {
+  outline: none;
+  border-color: #4a6fa5;
+}
+
+.proxy-recorder__field textarea:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.proxy-recorder__field-hint {
+  font-size: 10px;
+  color: #999;
+  margin-top: 1px;
+}
+
+/* -----------------------------------------------------------------------
+   Controls row — Start / Stop / Refresh
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.proxy-recorder__start-btn {
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #3c9c52;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.proxy-recorder__start-btn:hover:not(:disabled) {
+  background: #2e7d40;
+}
+
+.proxy-recorder__start-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.proxy-recorder__stop-btn {
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #d94a4a;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.proxy-recorder__stop-btn:hover:not(:disabled) {
+  background: #b83535;
+}
+
+.proxy-recorder__stop-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.proxy-recorder__refresh-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  color: #4a6fa5;
+  border: 1px solid #4a6fa5;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.proxy-recorder__refresh-btn:hover:not(:disabled) {
+  background: #4a6fa5;
+  color: #fff;
+}
+
+.proxy-recorder__refresh-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------------
+   Captured requests list
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__captured {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proxy-recorder__captured-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.proxy-recorder__captured-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.proxy-recorder__captured-count {
+  font-size: 11px;
+  color: #888;
+}
+
+.proxy-recorder__captured-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: #fff;
+  padding: 4px;
+}
+
+.proxy-recorder__captured-empty {
+  font-size: 12px;
+  color: #aaa;
+  font-style: italic;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.proxy-recorder__captured-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: #fafafa;
+  border: 1px solid #ebebeb;
+  min-width: 0;
+}
+
+.proxy-recorder__method {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 3px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  min-width: 36px;
+  text-align: center;
+}
+
+.proxy-recorder__method--GET    { background: #d1ecf1; color: #0c5460; }
+.proxy-recorder__method--POST   { background: #d4edda; color: #155724; }
+.proxy-recorder__method--PUT    { background: #fff3cd; color: #856404; }
+.proxy-recorder__method--DELETE { background: #f8d7da; color: #721c24; }
+.proxy-recorder__method--PATCH  { background: #e2d9f3; color: #432874; }
+.proxy-recorder__method--other  { background: #e2e3e5; color: #6c757d; }
+
+.proxy-recorder__url {
+  flex: 1;
+  font-size: 12px;
+  font-family: monospace;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.proxy-recorder__status-code {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.proxy-recorder__status-code--2xx { color: #155724; }
+.proxy-recorder__status-code--3xx { color: #856404; }
+.proxy-recorder__status-code--4xx { color: #721c24; }
+.proxy-recorder__status-code--5xx { color: #491217; }
+.proxy-recorder__status-code--0   { color: #aaa; }
+
+.proxy-recorder__elapsed {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------
+   Footer — Apply to Test Plan
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.proxy-recorder__footer-info {
+  font-size: 12px;
+  color: #666;
+}
+
+.proxy-recorder__apply-btn {
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #4a6fa5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.proxy-recorder__apply-btn:hover:not(:disabled) {
+  background: #3a5a8a;
+}
+
+.proxy-recorder__apply-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------------
+   Error / loading
+   ----------------------------------------------------------------------- */
+
+.proxy-recorder__error {
+  font-size: 12px;
+  color: #d94a4a;
+  padding: 4px 0;
+}
+
+.proxy-recorder__loading {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0;
+}

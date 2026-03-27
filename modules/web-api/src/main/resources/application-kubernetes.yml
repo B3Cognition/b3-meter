@@ -1,0 +1,15 @@
+# Kubernetes profile: activated when SPRING_PROFILES_ACTIVE=kubernetes
+# Enables structured JSON logging (via logback-spring.xml profile matching),
+# K8s health probes, and assumes PostgreSQL via environment variables.
+
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/jmeter_next}
+    driver-class-name: org.postgresql.Driver
+    username: ${DATABASE_USER:jmeter}
+    password: ${DATABASE_PASSWORD:jmeter}
+
+management:
+  endpoint:
+    health:
+      show-details: always

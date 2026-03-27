@@ -1,0 +1,72 @@
+controller:
+  replicaCount: 1
+  image:
+    repository: jmeter-next/controller
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    httpPort: 8080
+    uiPort: 3000
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: jmeter.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+worker:
+  replicaCount: 3
+  image:
+    repository: jmeter-next/worker
+    tag: latest
+    pullPolicy: IfNotPresent
+  grpcPort: 9090
+  healthPort: 8090
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 1Gi
+
+mockServers:
+  enabled: false
+  # When enabled, deploys mock servers alongside for testing
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

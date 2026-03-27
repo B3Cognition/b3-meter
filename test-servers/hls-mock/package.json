@@ -1,0 +1,10 @@
+{
+  "name": "hls-mock",
+  "version": "1.0.0",
+  "description": "HLS mock server for E2E testing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

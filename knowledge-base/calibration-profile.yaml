@@ -1,0 +1,56 @@
+domains:
+  multi-protocol-load-testing:
+    confidence: 0.85
+    runs: 1
+    last_updated: "2026-03-26T01:30:00Z"
+    notes: "First run — 100% verification after rework. Pure JDK approach validated for 8 protocols."
+    estimate_multiplier: 1.0  # no baseline yet
+
+  frontend-react-zustand:
+    confidence: 0.70
+    runs: 1
+    last_updated: "2026-03-26T01:30:00Z"
+    notes: "State management caused 3 major bugs (runId propagation, SSE event name, API type mismatch). Allocate 40% extra for integration debugging."
+    estimate_multiplier: 1.4
+
+  java-engine-architecture:
+    confidence: 0.95
+    runs: 1
+    last_updated: "2026-03-26T01:30:00Z"
+    notes: "NodeInterpreter + SampleResult pattern scales cleanly. 577 tests, 0 failures."
+    estimate_multiplier: 1.0
+
+  e2e-simulation:
+    confidence: 0.90
+    runs: 1
+    last_updated: "2026-03-26T01:30:00Z"
+    notes: "Mock servers + Docker Compose pattern works. Node.js mock per protocol is maintainable."
+    estimate_multiplier: 1.0
+
+  innovation-features:
+    confidence: 0.60
+    runs: 1
+    last_updated: "2026-03-26T01:30:00Z"
+    notes: "UI-only implementations without backend integration. Needs backend wiring in next session."
+    estimate_multiplier: 1.5
+
+  productization-infrastructure:
+    confidence: 0.95
+    runs: 1
+    last_updated: "2026-03-26T19:00:00Z"
+    notes: "Template-driven artifacts (LICENSE, CI/CD, README, Terraform, OpenAPI) are 15x faster than human estimates. Agent completion rate: 100% first-pass."
+    estimate_multiplier: 0.07  # actual was 7% of estimated
+
+  cloud-aws:
+    confidence: 0.90
+    runs: 1
+    last_updated: "2026-03-26T19:00:00Z"
+    notes: "VPC + EKS + ECR + Helm via official Terraform modules. Spot instances for workers validated."
+    estimate_multiplier: 0.5
+
+  distributed-mode:
+    confidence: 0.80
+    runs: 1
+    last_updated: "2026-03-26T19:00:00Z"
+    notes: "70% pre-built (gRPC, controller, worker). Worker engine wiring completed. Docker Compose + Helm chart done. Remaining: metric merge accuracy, mTLS."
+    estimate_multiplier: 1.0

@@ -1,0 +1,16 @@
+.xml-editor-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.xml-editor-container .cm-editor {
+  height: 100%;
+  background: var(--bg-primary, #0f172a);
+}
+.xml-editor-container .cm-gutters {
+  background: var(--bg-secondary, #1e293b);
+  color: var(--text-secondary, #64748b);
+}
+.xml-editor-container .cm-activeLineGutter {
+  background: var(--bg-tertiary, #334155);
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MQTT Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">MQTT pub/sub smoke test against local mock broker on localhost:1883</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="MQTT Publishers" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <MQTTSampler guiclass="MQTTSamplerGui" testclass="MQTTSampler" testname="MQTT Publish" enabled="true">
+          <stringProp name="MQTTSampler.broker">tcp://localhost:1883</stringProp>
+          <stringProp name="MQTTSampler.topic">test/loadtest</stringProp>
+          <stringProp name="MQTTSampler.message">{"timestamp":1234567890,"value":"hello from jmeter-next"}</stringProp>
+          <stringProp name="MQTTSampler.qos">0</stringProp>
+          <stringProp name="MQTTSampler.action">publish</stringProp>
+          <stringProp name="MQTTSampler.timeout">5000</stringProp>
+        </MQTTSampler>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

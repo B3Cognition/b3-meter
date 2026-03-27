@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPattern": "/api/.*",
+    "headers": {
+      "Content-Type": {
+        "contains": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json",
+      "Location": "/api/resources/42"
+    },
+    "jsonBody": {
+      "status": "created",
+      "data": {
+        "id": 42,
+        "name": "new-resource"
+      }
+    }
+  }
+}

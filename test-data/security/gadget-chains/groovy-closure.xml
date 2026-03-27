@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CVE-2015-3253 / CVSS 9.8 (Critical)
+  Groovy MethodClosure gadget chain for XStream deserialization RCE.
+
+  Attack surface: Apache JMeter ships with Groovy as a first-class scripting engine
+  (JSR223 samplers, pre/post processors). The Groovy JAR is always on the JMeter
+  classpath, making org.codehaus.groovy.runtime.MethodClosure available for exploitation.
+
+  A malicious .jmx plan or serialized RMI payload containing this XML invokes
+  Runtime.exec() via the MethodClosure delegate chain when deserialized.
+
+  Affected component: Groovy < 2.4.4 + XStream without security allowlist.
+  Fixed in:          XStreamSecurityPolicy.apply() — org.codehaus.groovy.** is denied
+                     unless explicitly registered. blocksGroovyMethodClosure() in
+                     XStreamSecurityPolicyTest verifies this gate.
+
+  Full chain:
+    MethodClosure.delegate = Runtime.getRuntime()
+    MethodClosure.method   = "exec"
+    → Runtime.exec("id") is invoked on deserialization
+
+  Reference: https://security.snyk.io/vuln/SNYK-JAVA-ORGCODEHAUS-GROOVY-30474
+             https://nvd.nist.gov/vuln/detail/CVE-2015-3253
+-->
+<object-stream>
+  <org.codehaus.groovy.runtime.MethodClosure>
+    <delegate class="java.lang.Runtime"/>
+    <method>exec</method>
+    <maximumNumberOfParameters>1</maximumNumberOfParameters>
+    <parameterTypes>
+      <class>java.lang.String</class>
+    </parameterTypes>
+  </org.codehaus.groovy.runtime.MethodClosure>
+</object-stream>

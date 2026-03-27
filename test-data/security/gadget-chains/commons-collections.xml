@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CVE-2013-7285 / CVSS 9.8 (Critical)
+  Commons Collections InvokerTransformer gadget chain for XStream deserialization RCE.
+
+  Attack surface: JMeter saves/loads .jmx test plans via XStream. A malicious .jmx file
+  containing this XML would trigger arbitrary OS command execution when deserialized on
+  the JMeter controller or any worker that loads the plan.
+
+  Affected component: XStream < 1.4.7 with commons-collections on the classpath.
+  Fixed in:          XStreamSecurityPolicy.apply() — allowTypesByWildcard denies
+                     org.apache.commons.** unless explicitly registered.
+
+  Reference: https://x-stream.github.io/CVE-2013-7285.html
+             https://nvd.nist.gov/vuln/detail/CVE-2013-7285
+-->
+<object-stream>
+  <org.apache.commons.collections4.functors.InvokerTransformer>
+    <iMethodName>exec</iMethodName>
+    <iParamTypes><class>java.lang.String</class></iParamTypes>
+    <iArgs><string>calc.exe</string></iArgs>
+  </org.apache.commons.collections4.functors.InvokerTransformer>
+</object-stream>

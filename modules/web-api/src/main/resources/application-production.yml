@@ -1,0 +1,14 @@
+server:
+  ssl:
+    enabled: true
+    protocol: TLS
+    enabled-protocols: TLSv1.2,TLSv1.3
+    ciphers: TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
+jmeter:
+  auth:
+    multi-user: true
+  quota:
+    max-concurrent-runs: 3
+    max-virtual-users: 10000
+    max-duration-seconds: 14400

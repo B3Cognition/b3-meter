@@ -1,0 +1,313 @@
+/* -----------------------------------------------------------------------
+   DistributedConfig — worker list and distributed run controls
+   ----------------------------------------------------------------------- */
+
+.distributed-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* -----------------------------------------------------------------------
+   Header row
+   ----------------------------------------------------------------------- */
+
+.distributed-config__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.distributed-config__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.distributed-config__add-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #4a6fa5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.distributed-config__add-btn:hover {
+  background: #3a5a8a;
+}
+
+/* -----------------------------------------------------------------------
+   Add-worker form
+   ----------------------------------------------------------------------- */
+
+.distributed-config__form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.distributed-config__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.distributed-config__field label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.distributed-config__field input {
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  min-width: 140px;
+}
+
+.distributed-config__field input:focus {
+  outline: none;
+  border-color: #4a6fa5;
+}
+
+.distributed-config__form-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.distributed-config__save-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #3c9c52;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.distributed-config__save-btn:hover:not(:disabled) {
+  background: #2e7d40;
+}
+
+.distributed-config__save-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.distributed-config__cancel-btn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #e8e8e8;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.distributed-config__cancel-btn:hover {
+  background: #d0d0d0;
+}
+
+/* -----------------------------------------------------------------------
+   Worker list
+   ----------------------------------------------------------------------- */
+
+.distributed-config__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.distributed-config__empty {
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.distributed-config__worker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.distributed-config__worker--selected {
+  border-color: #4a6fa5;
+  background: #f0f4fa;
+}
+
+.distributed-config__worker-checkbox {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.distributed-config__worker-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.distributed-config__worker-address {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.distributed-config__worker-port {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------
+   Status badges
+   ----------------------------------------------------------------------- */
+
+.distributed-config__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.distributed-config__badge--available {
+  background: #d4edda;
+  color: #155724;
+}
+
+.distributed-config__badge--busy {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.distributed-config__badge--offline {
+  background: #e2e3e5;
+  color: #6c757d;
+}
+
+/* -----------------------------------------------------------------------
+   Remove button
+   ----------------------------------------------------------------------- */
+
+.distributed-config__remove-btn {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  background: transparent;
+  color: #d94a4a;
+  border: 1px solid #d94a4a;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.distributed-config__remove-btn:hover {
+  background: #d94a4a;
+  color: #fff;
+}
+
+/* -----------------------------------------------------------------------
+   Footer — Start Distributed Run button
+   ----------------------------------------------------------------------- */
+
+.distributed-config__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.distributed-config__selection-info {
+  font-size: 12px;
+  color: #666;
+}
+
+.distributed-config__start-btn {
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #3c9c52;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.distributed-config__start-btn:hover:not(:disabled) {
+  background: #2e7d40;
+}
+
+.distributed-config__start-btn:active:not(:disabled) {
+  background: #256633;
+}
+
+.distributed-config__start-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------------
+   Error / loading messages
+   ----------------------------------------------------------------------- */
+
+.distributed-config__error {
+  font-size: 12px;
+  color: #d94a4a;
+  padding: 4px 0;
+}
+
+.distributed-config__loading {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0;
+}

@@ -1,0 +1,290 @@
+/* -----------------------------------------------------------------------
+   PropertyPanel — form styling
+   ----------------------------------------------------------------------- */
+
+.property-panel-container {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.property-panel-empty {
+  color: #888;
+  font-style: italic;
+  padding: 16px;
+}
+
+.property-panel-heading {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+/* Type title — bold heading showing the element type */
+.property-panel-type-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px;
+  color: var(--text-primary, #222);
+  background: var(--surface-secondary, #f5f5f5);
+  border-radius: 4px;
+}
+
+/* Universal fields — Name and Comments */
+.universal-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+/* Separator between universal and type-specific fields */
+.property-panel-separator {
+  border: none;
+  border-top: 1px solid var(--border, #ddd);
+  margin: 12px 0;
+}
+
+/* Form layout */
+
+.property-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+}
+
+.form-field input,
+.form-field select {
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.form-field input.field-error,
+.form-field select.field-error {
+  border-color: #d94a4a;
+}
+
+.field-error-msg {
+  font-size: 11px;
+  color: #d94a4a;
+}
+
+/* Fieldsets — JMeter-style grouped property sections */
+
+.property-fieldset {
+  border: 1px solid var(--border, #808080);
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.property-fieldset legend {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 4px;
+  color: var(--text-secondary, #666);
+}
+
+/* Radio button groups */
+
+.form-field-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #444;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Checkbox label — inline checkbox + text */
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #444;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Inline form field — label above, row of input + checkbox side by side */
+
+.form-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-field-row input[type="number"] {
+  flex: 1;
+}
+
+/* Disabled inputs */
+
+.form-field input:disabled,
+.form-field select:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Submit button */
+
+.form-submit-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #4a90d9;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.form-submit-btn:hover {
+  background: #3478c0;
+}
+
+.form-submit-btn:active {
+  background: #2d68a8;
+}
+
+/* HTTP Sampler Basic/Advanced tabs */
+
+.http-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border, #ddd);
+  margin-bottom: 8px;
+}
+
+.http-tab {
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #666);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.http-tab:hover {
+  color: var(--text-primary, #222);
+}
+
+.http-tab-active {
+  color: var(--accent, #4a90d9);
+  border-bottom-color: var(--accent, #4a90d9);
+}
+
+/* HTTP sub-tabs (Parameters / Body Data / Files Upload) */
+
+.http-subtab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border, #ddd);
+  margin: 8px 0 0;
+}
+
+.http-subtab {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.http-subtab:hover {
+  color: var(--text-primary, #222);
+}
+
+.http-subtab-active {
+  color: var(--accent, #4a90d9);
+  border-bottom-color: var(--accent, #4a90d9);
+}
+
+.http-subtab-content {
+  padding: 8px 0;
+}
+
+/* Body data textarea */
+
+.http-body-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  padding: 8px;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 4px;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #222);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.http-body-textarea:focus {
+  outline: none;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}

@@ -1,0 +1,31 @@
+# Build
+build/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+dist/
+
+# H2 Database
+data/
+
+# Test results
+test-results/
+.playwright-mcp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+*.tfstate*
+
+# Docker
+*.log

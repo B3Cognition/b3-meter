@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JMeter 6.x complex extractors test plan.
+     Exercises RegEx, JSONPath, XPath2, CSS/JQuery, and Boundary extractors.
+     Used to verify engine-adapter correctly parses all extractor element types. -->
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="6.0">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Complex Extractors">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments"/>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Extractor Users">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+          <intProp name="LoopController.loops">1</intProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET JSON API">
+          <stringProp name="HTTPSampler.domain">api.example.com</stringProp>
+          <stringProp name="HTTPSampler.path">/users/1</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPathExtractor guiclass="JSONPathExtractorGui" testclass="JSONPathExtractor" testname="Extract User ID">
+            <stringProp name="JSONPathExtractor.referenceNames">EXTRACTED_ID</stringProp>
+            <stringProp name="JSONPathExtractor.jsonPathExprs">$.data.id</stringProp>
+            <stringProp name="JSONPathExtractor.defaultValues">NOT_FOUND</stringProp>
+          </JSONPathExtractor>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract Token">
+            <stringProp name="RegexExtractor.refname">AUTH_TOKEN</stringProp>
+            <stringProp name="RegexExtractor.regex">"token"\s*:\s*"([^"]+)"</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">NO_TOKEN</stringProp>
+            <intProp name="RegexExtractor.match_number">1</intProp>
+          </RegexExtractor>
+          <hashTree/>
+          <XPath2Extractor guiclass="XPath2ExtractorGui" testclass="XPath2Extractor" testname="Extract XML Value">
+            <stringProp name="XPathExtractor.refname">XML_VALUE</stringProp>
+            <stringProp name="XPathExtractor.xpathQuery">//response/status/text()</stringProp>
+            <stringProp name="XPathExtractor.default">NONE</stringProp>
+          </XPath2Extractor>
+          <hashTree/>
+          <BoundaryExtractor guiclass="BoundaryExtractorGui" testclass="BoundaryExtractor" testname="Extract Session">
+            <stringProp name="BoundaryExtractor.refname">SESSION_ID</stringProp>
+            <stringProp name="BoundaryExtractor.lboundary">sessionId=</stringProp>
+            <stringProp name="BoundaryExtractor.rboundary">;</stringProp>
+            <stringProp name="BoundaryExtractor.default">NO_SESSION</stringProp>
+            <intProp name="BoundaryExtractor.match_number">1</intProp>
+          </BoundaryExtractor>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

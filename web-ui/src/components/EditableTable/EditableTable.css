@@ -1,0 +1,185 @@
+/* -----------------------------------------------------------------------
+   EditableTable — inline-editable table with JMeter-style controls
+   ----------------------------------------------------------------------- */
+
+.editable-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+/* ---- Table ---- */
+
+.editable-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border, #808080);
+  table-layout: fixed;
+}
+
+.editable-table th {
+  background: var(--bg-secondary, #D4D0C8);
+  color: var(--text-primary, #000000);
+  font-weight: 600;
+  font-size: 12px;
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid var(--border, #808080);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editable-table td {
+  padding: 0;
+  border: 1px solid var(--border, #808080);
+  height: 28px;
+  vertical-align: middle;
+  cursor: default;
+}
+
+/* Row colors */
+
+.editable-table tbody tr:nth-child(odd) {
+  background: var(--bg-tertiary, #FFFFFF);
+}
+
+.editable-table tbody tr:nth-child(even) {
+  background: var(--bg-primary, #F0F0F0);
+}
+
+.editable-table tbody tr:hover {
+  filter: brightness(0.96);
+}
+
+.editable-table tbody tr.editable-table-row-selected {
+  background: var(--accent, #316AC5) !important;
+  color: #FFFFFF;
+}
+
+.editable-table tbody tr.editable-table-row-selected td {
+  color: #FFFFFF;
+}
+
+/* ---- Cell display (non-editing) ---- */
+
+.editable-table-cell-display {
+  display: block;
+  padding: 4px 8px;
+  min-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  color: var(--text-primary, #000000);
+}
+
+.editable-table tbody tr.editable-table-row-selected .editable-table-cell-display {
+  color: #FFFFFF;
+}
+
+/* ---- Cell editing ---- */
+
+.editable-table-cell-input {
+  width: 100%;
+  height: 100%;
+  padding: 4px 8px;
+  border: none;
+  outline: 2px solid var(--accent, #316AC5);
+  outline-offset: -2px;
+  background: #FFFFFF;
+  color: #000000;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.editable-table-cell-select {
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  border: none;
+  outline: 2px solid var(--accent, #316AC5);
+  outline-offset: -2px;
+  background: #FFFFFF;
+  color: #000000;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* ---- Checkbox cell ---- */
+
+.editable-table-cell-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 4px 0;
+}
+
+.editable-table-cell-checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent, #316AC5);
+}
+
+/* ---- Empty state ---- */
+
+.editable-table-empty {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-secondary, #444444);
+  font-style: italic;
+  background: var(--bg-tertiary, #FFFFFF);
+  border: 1px solid var(--border, #808080);
+  border-top: none;
+}
+
+/* ---- Action buttons ---- */
+
+.editable-table-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.editable-table-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text-primary, #000000);
+  background: var(--bg-secondary, #D4D0C8);
+  border: 1px solid var(--border, #808080);
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.editable-table-btn:hover {
+  background: var(--accent-hover, #4A80E0);
+  color: #FFFFFF;
+  border-color: var(--accent, #316AC5);
+}
+
+.editable-table-btn:active {
+  background: var(--accent, #316AC5);
+  color: #FFFFFF;
+}
+
+.editable-table-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--bg-secondary, #D4D0C8);
+  color: var(--text-secondary, #444444);
+  border-color: var(--border, #808080);
+}

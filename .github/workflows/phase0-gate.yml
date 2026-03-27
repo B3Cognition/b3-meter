@@ -1,0 +1,41 @@
+name: Phase 0 Gate — Engine/GUI Decoupling
+
+on:
+  pull_request:
+    paths:
+      - 'modules/engine-service/**'
+      - 'modules/engine-adapter/**'
+  push:
+    branches: [main]
+
+jobs:
+  phase0-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Run ArchUnit decoupling rules
+        run: ./gradlew :modules:engine-service:test --tests '*EngineDecouplingTest*' --rerun
+
+      - name: Run XStream security tests
+        run: ./gradlew :modules:engine-adapter:test --tests '*XStreamSecurityPolicyTest*' --rerun
+
+      - name: Run full test suite
+        run: ./gradlew test --rerun
+
+      - name: Verify no Swing imports in engine-service
+        run: |
+          if grep -r 'javax\.swing\|java\.awt' modules/engine-service/src/main/java/; then
+            echo "FAIL: Swing/AWT imports found in engine-service"
+            exit 1
+          fi
+          echo "PASS: No Swing/AWT imports in engine-service"

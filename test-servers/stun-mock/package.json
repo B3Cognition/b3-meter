@@ -1,0 +1,10 @@
+{
+  "name": "stun-mock",
+  "version": "1.0.0",
+  "description": "Minimal STUN mock server for WebRTC ICE candidate gathering tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

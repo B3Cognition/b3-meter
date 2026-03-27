@@ -1,0 +1,10 @@
+{
+  "name": "webrtc-signaling-mock",
+  "version": "1.0.0",
+  "description": "WebRTC SDP signaling mock server for load-testing WebRTCSampler",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

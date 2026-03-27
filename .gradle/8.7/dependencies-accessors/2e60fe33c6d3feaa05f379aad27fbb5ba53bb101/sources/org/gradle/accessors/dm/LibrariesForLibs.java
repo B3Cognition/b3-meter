@@ -1,0 +1,813 @@
+package org.gradle.accessors.dm;
+
+import org.gradle.api.NonNullApi;
+import org.gradle.api.artifacts.MinimalExternalModuleDependency;
+import org.gradle.plugin.use.PluginDependency;
+import org.gradle.api.artifacts.ExternalModuleDependencyBundle;
+import org.gradle.api.artifacts.MutableVersionConstraint;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ProviderFactory;
+import org.gradle.api.internal.catalog.AbstractExternalDependencyFactory;
+import org.gradle.api.internal.catalog.DefaultVersionCatalog;
+import java.util.Map;
+import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
+import org.gradle.api.internal.artifacts.dsl.CapabilityNotationParser;
+import javax.inject.Inject;
+
+/**
+ * A catalog of dependencies accessible via the {@code libs} extension.
+ */
+@NonNullApi
+public class LibrariesForLibs extends AbstractExternalDependencyFactory {
+
+    private final AbstractExternalDependencyFactory owner = this;
+    private final FlywayLibraryAccessors laccForFlywayLibraryAccessors = new FlywayLibraryAccessors(owner);
+    private final GrpcLibraryAccessors laccForGrpcLibraryAccessors = new GrpcLibraryAccessors(owner);
+    private final JacksonLibraryAccessors laccForJacksonLibraryAccessors = new JacksonLibraryAccessors(owner);
+    private final JunitLibraryAccessors laccForJunitLibraryAccessors = new JunitLibraryAccessors(owner);
+    private final ProtobufLibraryAccessors laccForProtobufLibraryAccessors = new ProtobufLibraryAccessors(owner);
+    private final SpringLibraryAccessors laccForSpringLibraryAccessors = new SpringLibraryAccessors(owner);
+    private final VersionAccessors vaccForVersionAccessors = new VersionAccessors(providers, config);
+    private final BundleAccessors baccForBundleAccessors = new BundleAccessors(objects, providers, config, attributesFactory, capabilityNotationParser);
+    private final PluginAccessors paccForPluginAccessors = new PluginAccessors(providers, config);
+
+    @Inject
+    public LibrariesForLibs(DefaultVersionCatalog config, ProviderFactory providers, ObjectFactory objects, ImmutableAttributesFactory attributesFactory, CapabilityNotationParser capabilityNotationParser) {
+        super(config, providers, objects, attributesFactory, capabilityNotationParser);
+    }
+
+    /**
+     * Dependency provider for <b>archunit</b> with <b>com.tngtech.archunit:archunit-junit5</b> coordinates and
+     * with version reference <b>archunit</b>
+     * <p>
+     * This dependency was declared in catalog libs.versions.toml
+     */
+    public Provider<MinimalExternalModuleDependency> getArchunit() {
+        return create("archunit");
+    }
+
+    /**
+     * Dependency provider for <b>h2</b> with <b>com.h2database:h2</b> coordinates and
+     * with version reference <b>h2</b>
+     * <p>
+     * This dependency was declared in catalog libs.versions.toml
+     */
+    public Provider<MinimalExternalModuleDependency> getH2() {
+        return create("h2");
+    }
+
+    /**
+     * Dependency provider for <b>jooq</b> with <b>org.jooq:jooq</b> coordinates and
+     * with version reference <b>jooq</b>
+     * <p>
+     * This dependency was declared in catalog libs.versions.toml
+     */
+    public Provider<MinimalExternalModuleDependency> getJooq() {
+        return create("jooq");
+    }
+
+    /**
+     * Dependency provider for <b>picocli</b> with <b>info.picocli:picocli</b> coordinates and
+     * with version reference <b>picocli</b>
+     * <p>
+     * This dependency was declared in catalog libs.versions.toml
+     */
+    public Provider<MinimalExternalModuleDependency> getPicocli() {
+        return create("picocli");
+    }
+
+    /**
+     * Dependency provider for <b>xstream</b> with <b>com.thoughtworks.xstream:xstream</b> coordinates and
+     * with version reference <b>xstream</b>
+     * <p>
+     * This dependency was declared in catalog libs.versions.toml
+     */
+    public Provider<MinimalExternalModuleDependency> getXstream() {
+        return create("xstream");
+    }
+
+    /**
+     * Group of libraries at <b>flyway</b>
+     */
+    public FlywayLibraryAccessors getFlyway() {
+        return laccForFlywayLibraryAccessors;
+    }
+
+    /**
+     * Group of libraries at <b>grpc</b>
+     */
+    public GrpcLibraryAccessors getGrpc() {
+        return laccForGrpcLibraryAccessors;
+    }
+
+    /**
+     * Group of libraries at <b>jackson</b>
+     */
+    public JacksonLibraryAccessors getJackson() {
+        return laccForJacksonLibraryAccessors;
+    }
+
+    /**
+     * Group of libraries at <b>junit</b>
+     */
+    public JunitLibraryAccessors getJunit() {
+        return laccForJunitLibraryAccessors;
+    }
+
+    /**
+     * Group of libraries at <b>protobuf</b>
+     */
+    public ProtobufLibraryAccessors getProtobuf() {
+        return laccForProtobufLibraryAccessors;
+    }
+
+    /**
+     * Group of libraries at <b>spring</b>
+     */
+    public SpringLibraryAccessors getSpring() {
+        return laccForSpringLibraryAccessors;
+    }
+
+    /**
+     * Group of versions at <b>versions</b>
+     */
+    public VersionAccessors getVersions() {
+        return vaccForVersionAccessors;
+    }
+
+    /**
+     * Group of bundles at <b>bundles</b>
+     */
+    public BundleAccessors getBundles() {
+        return baccForBundleAccessors;
+    }
+
+    /**
+     * Group of plugins at <b>plugins</b>
+     */
+    public PluginAccessors getPlugins() {
+        return paccForPluginAccessors;
+    }
+
+    public static class FlywayLibraryAccessors extends SubDependencyFactory {
+
+        public FlywayLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>core</b> with <b>org.flywaydb:flyway-core</b> coordinates and
+         * with version reference <b>flyway</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getCore() {
+            return create("flyway.core");
+        }
+
+    }
+
+    public static class GrpcLibraryAccessors extends SubDependencyFactory {
+        private final GrpcNettyLibraryAccessors laccForGrpcNettyLibraryAccessors = new GrpcNettyLibraryAccessors(owner);
+
+        public GrpcLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>protobuf</b> with <b>io.grpc:grpc-protobuf</b> coordinates and
+         * with version reference <b>grpc</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getProtobuf() {
+            return create("grpc.protobuf");
+        }
+
+        /**
+         * Dependency provider for <b>stub</b> with <b>io.grpc:grpc-stub</b> coordinates and
+         * with version reference <b>grpc</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getStub() {
+            return create("grpc.stub");
+        }
+
+        /**
+         * Dependency provider for <b>testing</b> with <b>io.grpc:grpc-testing</b> coordinates and
+         * with version reference <b>grpc</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getTesting() {
+            return create("grpc.testing");
+        }
+
+        /**
+         * Group of libraries at <b>grpc.netty</b>
+         */
+        public GrpcNettyLibraryAccessors getNetty() {
+            return laccForGrpcNettyLibraryAccessors;
+        }
+
+    }
+
+    public static class GrpcNettyLibraryAccessors extends SubDependencyFactory {
+
+        public GrpcNettyLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>shaded</b> with <b>io.grpc:grpc-netty-shaded</b> coordinates and
+         * with version reference <b>grpc</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getShaded() {
+            return create("grpc.netty.shaded");
+        }
+
+    }
+
+    public static class JacksonLibraryAccessors extends SubDependencyFactory {
+
+        public JacksonLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>annotations</b> with <b>com.fasterxml.jackson.core:jackson-annotations</b> coordinates and
+         * with version reference <b>jackson</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getAnnotations() {
+            return create("jackson.annotations");
+        }
+
+        /**
+         * Dependency provider for <b>core</b> with <b>com.fasterxml.jackson.core:jackson-core</b> coordinates and
+         * with version reference <b>jackson</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getCore() {
+            return create("jackson.core");
+        }
+
+        /**
+         * Dependency provider for <b>databind</b> with <b>com.fasterxml.jackson.core:jackson-databind</b> coordinates and
+         * with version reference <b>jackson</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getDatabind() {
+            return create("jackson.databind");
+        }
+
+    }
+
+    public static class JunitLibraryAccessors extends SubDependencyFactory {
+        private final JunitJupiterLibraryAccessors laccForJunitJupiterLibraryAccessors = new JunitJupiterLibraryAccessors(owner);
+
+        public JunitLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>bom</b> with <b>org.junit:junit-bom</b> coordinates and
+         * with version reference <b>junit</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getBom() {
+            return create("junit.bom");
+        }
+
+        /**
+         * Group of libraries at <b>junit.jupiter</b>
+         */
+        public JunitJupiterLibraryAccessors getJupiter() {
+            return laccForJunitJupiterLibraryAccessors;
+        }
+
+    }
+
+    public static class JunitJupiterLibraryAccessors extends SubDependencyFactory implements DependencyNotationSupplier {
+
+        public JunitJupiterLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>jupiter</b> with <b>org.junit.jupiter:junit-jupiter</b> coordinates and
+         * with version reference <b>junit</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> asProvider() {
+            return create("junit.jupiter");
+        }
+
+        /**
+         * Dependency provider for <b>api</b> with <b>org.junit.jupiter:junit-jupiter-api</b> coordinates and
+         * with version reference <b>junit</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getApi() {
+            return create("junit.jupiter.api");
+        }
+
+        /**
+         * Dependency provider for <b>engine</b> with <b>org.junit.jupiter:junit-jupiter-engine</b> coordinates and
+         * with version reference <b>junit</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getEngine() {
+            return create("junit.jupiter.engine");
+        }
+
+    }
+
+    public static class ProtobufLibraryAccessors extends SubDependencyFactory {
+        private final ProtobufJavaLibraryAccessors laccForProtobufJavaLibraryAccessors = new ProtobufJavaLibraryAccessors(owner);
+
+        public ProtobufLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Group of libraries at <b>protobuf.java</b>
+         */
+        public ProtobufJavaLibraryAccessors getJava() {
+            return laccForProtobufJavaLibraryAccessors;
+        }
+
+    }
+
+    public static class ProtobufJavaLibraryAccessors extends SubDependencyFactory implements DependencyNotationSupplier {
+
+        public ProtobufJavaLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>java</b> with <b>com.google.protobuf:protobuf-java</b> coordinates and
+         * with version reference <b>protobuf</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> asProvider() {
+            return create("protobuf.java");
+        }
+
+        /**
+         * Dependency provider for <b>util</b> with <b>com.google.protobuf:protobuf-java-util</b> coordinates and
+         * with version reference <b>protobuf</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getUtil() {
+            return create("protobuf.java.util");
+        }
+
+    }
+
+    public static class SpringLibraryAccessors extends SubDependencyFactory {
+        private final SpringBootLibraryAccessors laccForSpringBootLibraryAccessors = new SpringBootLibraryAccessors(owner);
+
+        public SpringLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Group of libraries at <b>spring.boot</b>
+         */
+        public SpringBootLibraryAccessors getBoot() {
+            return laccForSpringBootLibraryAccessors;
+        }
+
+    }
+
+    public static class SpringBootLibraryAccessors extends SubDependencyFactory {
+        private final SpringBootStarterLibraryAccessors laccForSpringBootStarterLibraryAccessors = new SpringBootStarterLibraryAccessors(owner);
+
+        public SpringBootLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Group of libraries at <b>spring.boot.starter</b>
+         */
+        public SpringBootStarterLibraryAccessors getStarter() {
+            return laccForSpringBootStarterLibraryAccessors;
+        }
+
+    }
+
+    public static class SpringBootStarterLibraryAccessors extends SubDependencyFactory {
+
+        public SpringBootStarterLibraryAccessors(AbstractExternalDependencyFactory owner) { super(owner); }
+
+        /**
+         * Dependency provider for <b>actuator</b> with <b>org.springframework.boot:spring-boot-starter-actuator</b> coordinates and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getActuator() {
+            return create("spring.boot.starter.actuator");
+        }
+
+        /**
+         * Dependency provider for <b>security</b> with <b>org.springframework.boot:spring-boot-starter-security</b> coordinates and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getSecurity() {
+            return create("spring.boot.starter.security");
+        }
+
+        /**
+         * Dependency provider for <b>test</b> with <b>org.springframework.boot:spring-boot-starter-test</b> coordinates and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getTest() {
+            return create("spring.boot.starter.test");
+        }
+
+        /**
+         * Dependency provider for <b>web</b> with <b>org.springframework.boot:spring-boot-starter-web</b> coordinates and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getWeb() {
+            return create("spring.boot.starter.web");
+        }
+
+        /**
+         * Dependency provider for <b>webflux</b> with <b>org.springframework.boot:spring-boot-starter-webflux</b> coordinates and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This dependency was declared in catalog libs.versions.toml
+         */
+        public Provider<MinimalExternalModuleDependency> getWebflux() {
+            return create("spring.boot.starter.webflux");
+        }
+
+    }
+
+    public static class VersionAccessors extends VersionFactory  {
+
+        private final NodeVersionAccessors vaccForNodeVersionAccessors = new NodeVersionAccessors(providers, config);
+        private final OwaspVersionAccessors vaccForOwaspVersionAccessors = new OwaspVersionAccessors(providers, config);
+        private final ProtobufVersionAccessors vaccForProtobufVersionAccessors = new ProtobufVersionAccessors(providers, config);
+        private final SpringVersionAccessors vaccForSpringVersionAccessors = new SpringVersionAccessors(providers, config);
+        public VersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>archunit</b> with value <b>1.3.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getArchunit() { return getVersion("archunit"); }
+
+        /**
+         * Version alias <b>flyway</b> with value <b>10.0.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getFlyway() { return getVersion("flyway"); }
+
+        /**
+         * Version alias <b>grpc</b> with value <b>1.63.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getGrpc() { return getVersion("grpc"); }
+
+        /**
+         * Version alias <b>h2</b> with value <b>2.2.224</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getH2() { return getVersion("h2"); }
+
+        /**
+         * Version alias <b>jackson</b> with value <b>2.17.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getJackson() { return getVersion("jackson"); }
+
+        /**
+         * Version alias <b>java</b> with value <b>21</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getJava() { return getVersion("java"); }
+
+        /**
+         * Version alias <b>jooq</b> with value <b>3.19.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getJooq() { return getVersion("jooq"); }
+
+        /**
+         * Version alias <b>junit</b> with value <b>5.11.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getJunit() { return getVersion("junit"); }
+
+        /**
+         * Version alias <b>picocli</b> with value <b>4.7.6</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getPicocli() { return getVersion("picocli"); }
+
+        /**
+         * Version alias <b>react</b> with value <b>19.0.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getReact() { return getVersion("react"); }
+
+        /**
+         * Version alias <b>vite</b> with value <b>6.0.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getVite() { return getVersion("vite"); }
+
+        /**
+         * Version alias <b>xstream</b> with value <b>1.4.21</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getXstream() { return getVersion("xstream"); }
+
+        /**
+         * Group of versions at <b>versions.node</b>
+         */
+        public NodeVersionAccessors getNode() {
+            return vaccForNodeVersionAccessors;
+        }
+
+        /**
+         * Group of versions at <b>versions.owasp</b>
+         */
+        public OwaspVersionAccessors getOwasp() {
+            return vaccForOwaspVersionAccessors;
+        }
+
+        /**
+         * Group of versions at <b>versions.protobuf</b>
+         */
+        public ProtobufVersionAccessors getProtobuf() {
+            return vaccForProtobufVersionAccessors;
+        }
+
+        /**
+         * Group of versions at <b>versions.spring</b>
+         */
+        public SpringVersionAccessors getSpring() {
+            return vaccForSpringVersionAccessors;
+        }
+
+    }
+
+    public static class NodeVersionAccessors extends VersionFactory  {
+
+        public NodeVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>node.gradle</b> with value <b>7.1.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getGradle() { return getVersion("node.gradle"); }
+
+    }
+
+    public static class OwaspVersionAccessors extends VersionFactory  {
+
+        public OwaspVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>owasp.depcheck</b> with value <b>9.2.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getDepcheck() { return getVersion("owasp.depcheck"); }
+
+    }
+
+    public static class ProtobufVersionAccessors extends VersionFactory  implements VersionNotationSupplier {
+
+        public ProtobufVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>protobuf</b> with value <b>3.25.3</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> asProvider() { return getVersion("protobuf"); }
+
+        /**
+         * Version alias <b>protobuf.plugin</b> with value <b>0.9.4</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getPlugin() { return getVersion("protobuf.plugin"); }
+
+    }
+
+    public static class SpringVersionAccessors extends VersionFactory  {
+
+        private final SpringDependencyVersionAccessors vaccForSpringDependencyVersionAccessors = new SpringDependencyVersionAccessors(providers, config);
+        public SpringVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>spring.boot</b> with value <b>3.3.0</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getBoot() { return getVersion("spring.boot"); }
+
+        /**
+         * Group of versions at <b>versions.spring.dependency</b>
+         */
+        public SpringDependencyVersionAccessors getDependency() {
+            return vaccForSpringDependencyVersionAccessors;
+        }
+
+    }
+
+    public static class SpringDependencyVersionAccessors extends VersionFactory  {
+
+        public SpringDependencyVersionAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Version alias <b>spring.dependency.management</b> with value <b>1.1.5</b>
+         * <p>
+         * If the version is a rich version and cannot be represented as a
+         * single version string, an empty string is returned.
+         * <p>
+         * This version was declared in catalog libs.versions.toml
+         */
+        public Provider<String> getManagement() { return getVersion("spring.dependency.management"); }
+
+    }
+
+    public static class BundleAccessors extends BundleFactory {
+
+        public BundleAccessors(ObjectFactory objects, ProviderFactory providers, DefaultVersionCatalog config, ImmutableAttributesFactory attributesFactory, CapabilityNotationParser capabilityNotationParser) { super(objects, providers, config, attributesFactory, capabilityNotationParser); }
+
+    }
+
+    public static class PluginAccessors extends PluginFactory {
+        private final NodePluginAccessors paccForNodePluginAccessors = new NodePluginAccessors(providers, config);
+        private final OwaspPluginAccessors paccForOwaspPluginAccessors = new OwaspPluginAccessors(providers, config);
+        private final SpringPluginAccessors paccForSpringPluginAccessors = new SpringPluginAccessors(providers, config);
+
+        public PluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>protobuf</b> with plugin id <b>com.google.protobuf</b> and
+         * with version reference <b>protobuf.plugin</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getProtobuf() { return createPlugin("protobuf"); }
+
+        /**
+         * Group of plugins at <b>plugins.node</b>
+         */
+        public NodePluginAccessors getNode() {
+            return paccForNodePluginAccessors;
+        }
+
+        /**
+         * Group of plugins at <b>plugins.owasp</b>
+         */
+        public OwaspPluginAccessors getOwasp() {
+            return paccForOwaspPluginAccessors;
+        }
+
+        /**
+         * Group of plugins at <b>plugins.spring</b>
+         */
+        public SpringPluginAccessors getSpring() {
+            return paccForSpringPluginAccessors;
+        }
+
+    }
+
+    public static class NodePluginAccessors extends PluginFactory {
+
+        public NodePluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>node.gradle</b> with plugin id <b>com.github.node-gradle.node</b> and
+         * with version reference <b>node.gradle</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getGradle() { return createPlugin("node.gradle"); }
+
+    }
+
+    public static class OwaspPluginAccessors extends PluginFactory {
+
+        public OwaspPluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>owasp.depcheck</b> with plugin id <b>org.owasp.dependencycheck</b> and
+         * with version reference <b>owasp.depcheck</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getDepcheck() { return createPlugin("owasp.depcheck"); }
+
+    }
+
+    public static class SpringPluginAccessors extends PluginFactory {
+        private final SpringDependencyPluginAccessors paccForSpringDependencyPluginAccessors = new SpringDependencyPluginAccessors(providers, config);
+
+        public SpringPluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>spring.boot</b> with plugin id <b>org.springframework.boot</b> and
+         * with version reference <b>spring.boot</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getBoot() { return createPlugin("spring.boot"); }
+
+        /**
+         * Group of plugins at <b>plugins.spring.dependency</b>
+         */
+        public SpringDependencyPluginAccessors getDependency() {
+            return paccForSpringDependencyPluginAccessors;
+        }
+
+    }
+
+    public static class SpringDependencyPluginAccessors extends PluginFactory {
+
+        public SpringDependencyPluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>spring.dependency.management</b> with plugin id <b>io.spring.dependency-management</b> and
+         * with version reference <b>spring.dependency.management</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getManagement() { return createPlugin("spring.dependency.management"); }
+
+    }
+
+}

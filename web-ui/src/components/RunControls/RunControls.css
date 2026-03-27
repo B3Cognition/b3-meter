@@ -1,0 +1,134 @@
+/* -----------------------------------------------------------------------
+   RunControls — button strip and status badge
+   ----------------------------------------------------------------------- */
+
+.run-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+
+/* -----------------------------------------------------------------------
+   Action buttons
+   ----------------------------------------------------------------------- */
+
+.run-controls__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.run-controls__btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.run-controls__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Run — green */
+.run-controls__btn--run {
+  background: #3c9c52;
+  color: #fff;
+}
+
+.run-controls__btn--run:hover:not(:disabled) {
+  background: #2e7d40;
+}
+
+.run-controls__btn--run:active:not(:disabled) {
+  background: #256633;
+}
+
+/* Stop — amber */
+.run-controls__btn--stop {
+  background: #d97b2a;
+  color: #fff;
+}
+
+.run-controls__btn--stop:hover:not(:disabled) {
+  background: #b8651f;
+}
+
+.run-controls__btn--stop:active:not(:disabled) {
+  background: #9a5219;
+}
+
+/* Stop Now — red */
+.run-controls__btn--stop-now {
+  background: #d94a4a;
+  color: #fff;
+}
+
+.run-controls__btn--stop-now:hover:not(:disabled) {
+  background: #b83333;
+}
+
+.run-controls__btn--stop-now:active:not(:disabled) {
+  background: #9a2a2a;
+}
+
+/* -----------------------------------------------------------------------
+   Status badge
+   ----------------------------------------------------------------------- */
+
+.run-controls__badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.run-controls__badge--idle {
+  background: #e8e8e8;
+  color: #555;
+}
+
+.run-controls__badge--starting {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.run-controls__badge--running {
+  background: #d4edda;
+  color: #155724;
+}
+
+.run-controls__badge--stopping {
+  background: #fce8cc;
+  color: #7a4200;
+}
+
+.run-controls__badge--stopped {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.run-controls__badge--error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* -----------------------------------------------------------------------
+   Inline error message
+   ----------------------------------------------------------------------- */
+
+.run-controls__error {
+  font-size: 12px;
+  color: #d94a4a;
+  flex-basis: 100%;
+}

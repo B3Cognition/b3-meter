@@ -1,0 +1,50 @@
+name: Post-Merge
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Run full test suite
+        run: ./gradlew test
+
+      - name: Run E2E tests (placeholder)
+        run: echo "E2E tests placeholder — wire up when test harness is ready"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build application
+        run: ./gradlew build -x test
+
+      - name: Docker build verification (placeholder)
+        run: echo "Docker build verification placeholder — wire up Dockerfile when ready"

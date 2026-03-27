@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="LDAP Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against ldap-mock server on port 3389</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="LDAP_HOST" elementType="Argument">
+            <stringProp name="Argument.name">LDAP_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(ldap.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="LDAP_PORT" elementType="Argument">
+            <stringProp name="Argument.name">LDAP_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(ldap.port,3389)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="LDAP Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">5</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- Bind as admin -->
+        <LDAPSampler guiclass="LdapTestSampleGui" testclass="LDAPSampler" testname="BIND admin" enabled="true">
+          <stringProp name="LDAPSampler.host">${LDAP_HOST}</stringProp>
+          <intProp name="LDAPSampler.port">3389</intProp>
+          <stringProp name="LDAPSampler.baseDN">dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindDN">cn=admin,dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindPassword">admin</stringProp>
+          <stringProp name="LDAPSampler.action">bind</stringProp>
+          <intProp name="LDAPSampler.timeout">10000</intProp>
+        </LDAPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert bind success" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1001">bind successful</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- Search for specific user -->
+        <LDAPSampler guiclass="LdapTestSampleGui" testclass="LDAPSampler" testname="SEARCH (uid=jdoe)" enabled="true">
+          <stringProp name="LDAPSampler.host">${LDAP_HOST}</stringProp>
+          <intProp name="LDAPSampler.port">3389</intProp>
+          <stringProp name="LDAPSampler.baseDN">dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindDN">cn=admin,dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindPassword">admin</stringProp>
+          <stringProp name="LDAPSampler.searchFilter">(uid=jdoe)</stringProp>
+          <stringProp name="LDAPSampler.action">search</stringProp>
+          <intProp name="LDAPSampler.timeout">10000</intProp>
+        </LDAPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert found John Doe" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="2001">John Doe</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert email" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="2002">jdoe@example.com</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- Search all users -->
+        <LDAPSampler guiclass="LdapTestSampleGui" testclass="LDAPSampler" testname="SEARCH (objectClass=*)" enabled="true">
+          <stringProp name="LDAPSampler.host">${LDAP_HOST}</stringProp>
+          <intProp name="LDAPSampler.port">3389</intProp>
+          <stringProp name="LDAPSampler.baseDN">dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindDN">cn=admin,dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindPassword">admin</stringProp>
+          <stringProp name="LDAPSampler.searchFilter">(objectClass=*)</stringProp>
+          <stringProp name="LDAPSampler.action">search</stringProp>
+          <intProp name="LDAPSampler.timeout">10000</intProp>
+        </LDAPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert multiple entries" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="3001">Total entries:</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- Search for non-existent user -->
+        <LDAPSampler guiclass="LdapTestSampleGui" testclass="LDAPSampler" testname="SEARCH (uid=nonexistent)" enabled="true">
+          <stringProp name="LDAPSampler.host">${LDAP_HOST}</stringProp>
+          <intProp name="LDAPSampler.port">3389</intProp>
+          <stringProp name="LDAPSampler.baseDN">dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindDN">cn=admin,dc=example,dc=org</stringProp>
+          <stringProp name="LDAPSampler.bindPassword">admin</stringProp>
+          <stringProp name="LDAPSampler.searchFilter">(uid=nonexistent)</stringProp>
+          <stringProp name="LDAPSampler.action">search</stringProp>
+          <intProp name="LDAPSampler.timeout">10000</intProp>
+        </LDAPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert no results" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="4001">No results found</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+          <stringProp name="ConstantTimer.delay">200</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

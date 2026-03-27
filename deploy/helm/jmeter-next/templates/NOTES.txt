@@ -1,0 +1,61 @@
+jMeter Next has been deployed successfully!
+
+=== Controller ===
+
+  Component: {{ include "jmeter-next.controller.fullname" . }}
+  Replicas:  {{ .Values.controller.replicaCount }}
+
+{{- if .Values.controller.ingress.enabled }}
+
+  The controller is accessible via Ingress:
+  {{- range .Values.controller.ingress.hosts }}
+    http://{{ .host }}
+  {{- end }}
+
+{{- else }}
+
+  To access the Web UI, run:
+
+    kubectl port-forward svc/{{ include "jmeter-next.controller.fullname" . }} {{ .Values.controller.service.uiPort }}:{{ .Values.controller.service.uiPort }} -n {{ .Release.Namespace }}
+
+  Then open: http://localhost:{{ .Values.controller.service.uiPort }}
+
+  To access the REST API, run:
+
+    kubectl port-forward svc/{{ include "jmeter-next.controller.fullname" . }} {{ .Values.controller.service.httpPort }}:{{ .Values.controller.service.httpPort }} -n {{ .Release.Namespace }}
+
+  Then: curl http://localhost:{{ .Values.controller.service.httpPort }}/actuator/health
+
+{{- end }}
+
+=== Workers ===
+
+  Component: {{ include "jmeter-next.worker.fullname" . }}
+  Replicas:  {{ .Values.worker.replicaCount }}
+  gRPC Port: {{ .Values.worker.grpcPort }}
+  Headless Service: {{ include "jmeter-next.worker.headlessServiceName" . }}
+
+  Workers are discovered automatically via DNS:
+    {{ include "jmeter-next.worker.headlessServiceName" . }}.{{ .Release.Namespace }}.svc.cluster.local
+
+{{- if .Values.worker.autoscaling.enabled }}
+
+  Autoscaling is ENABLED:
+    Min replicas: {{ .Values.worker.autoscaling.minReplicas }}
+    Max replicas: {{ .Values.worker.autoscaling.maxReplicas }}
+    Target CPU:   {{ .Values.worker.autoscaling.targetCPUUtilizationPercentage }}%
+
+{{- end }}
+
+=== Quick Start ===
+
+  1. Open the Web UI (see port-forward instructions above)
+  2. Workers register automatically via the headless service
+  3. Upload a test plan and click "Start Distributed Run"
+  4. Monitor results in real-time on the dashboard
+
+=== Verify ===
+
+  Run the Helm test:
+
+    helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

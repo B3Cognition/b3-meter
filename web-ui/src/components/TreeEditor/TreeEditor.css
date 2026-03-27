@@ -1,0 +1,135 @@
+/* TreeEditor component styles */
+
+.tree-empty {
+  padding: 16px;
+  color: #888;
+  font-style: italic;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 3px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.tree-node:hover {
+  background-color: #e8f0fe;
+}
+
+.tree-node.selected {
+  background-color: #d2e3fc;
+}
+
+.tree-node.disabled {
+  opacity: 0.5;
+}
+
+.node-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.node-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.node-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+/* Context menu */
+.context-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #808080;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+  min-width: 180px;
+  padding: 4px 0;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 12px 5px 24px;
+  font-size: 13px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  white-space: nowrap;
+  gap: 16px;
+}
+
+.context-menu-item:hover {
+  background-color: #e8f0fe;
+}
+
+.context-menu-item:disabled {
+  color: #aaa;
+  cursor: default;
+}
+
+.context-menu-item:disabled:hover {
+  background-color: transparent;
+}
+
+.context-menu-item.danger {
+  color: #d32f2f;
+}
+
+.context-menu-item.danger:hover {
+  background-color: #fdecea;
+}
+
+.context-menu-shortcut {
+  font-size: 11px;
+  color: #888;
+  margin-left: auto;
+  padding-left: 24px;
+}
+
+.context-menu-arrow {
+  font-size: 9px;
+  color: #666;
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+/* Cascading submenu trigger */
+.context-menu-submenu-trigger {
+  position: relative;
+}
+
+/* Nested submenu panel */
+.context-menu-sub {
+  position: absolute;
+  top: -4px;
+  left: 100%;
+  min-width: 200px;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: #d0d0d0;
+  margin: 4px 0;
+}

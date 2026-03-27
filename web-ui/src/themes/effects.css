@@ -1,0 +1,316 @@
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL — Bigger fonts, smoother transitions
+   ═══════════════════════════════════════════════════════════════ */
+html { font-size: 15px !important; transition: all 0.4s ease; }
+.toolbar-title { font-size: 20px !important; }
+.panel-header { font-size: 14px !important; }
+.tab { font-size: 14px !important; padding: 8px 20px !important; }
+.btn-small { font-size: 13px !important; padding: 6px 14px !important; }
+.status-bar { font-size: 13px !important; height: 32px !important; line-height: 32px !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   NORTON COMMANDER — True DOS dual-panel, the OG file manager
+   ═══════════════════════════════════════════════════════════════ */
+.theme-norton { font-family: "Courier New", "Lucida Console", monospace !important; font-size: 16px !important; }
+.theme-norton * { border-radius: 0 !important; font-family: inherit !important; }
+.theme-norton .toolbar {
+  border-bottom: 3px double #55ffff; text-transform: uppercase;
+  letter-spacing: 0.15em; font-size: 18px !important;
+  background: #000080 !important;
+}
+.theme-norton .tree-panel { border-right: 3px double #55ffff; }
+.theme-norton .panel-header {
+  border: 3px double #55ffff; background: #000080 !important;
+  text-align: center; font-size: 16px !important; text-transform: uppercase;
+}
+.theme-norton .status-bar {
+  background: #000000 !important; border-top: 1px solid #55ffff;
+  color: #55ff55 !important; font-size: 14px !important;
+}
+.theme-norton .btn-small { border: 2px solid #55ffff; text-transform: uppercase; background: #000080 !important; }
+.theme-norton .tab { border: 1px solid transparent; }
+.theme-norton .tab.active { border: 2px solid #55ffff; background: #000080 !important; }
+.theme-norton .drop-zone { border: 3px double #55ffff !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   MS-DOS — C:\> prompt, blinking cursor
+   ═══════════════════════════════════════════════════════════════ */
+.theme-msdos { font-family: "Courier New", monospace !important; }
+.theme-msdos * { border-radius: 0 !important; font-family: inherit !important; }
+.theme-msdos .toolbar::before { content: "C:\\JMETER> "; color: #55ff55; font-size: 16px; }
+.theme-msdos .status-bar::after {
+  content: "█"; animation: blink-cursor 1s step-end infinite; color: #aaaaaa;
+}
+@keyframes blink-cursor { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   AMIGA WORKBENCH — Striped title bars, orange highlights
+   ═══════════════════════════════════════════════════════════════ */
+.theme-amiga * { border-radius: 0 !important; }
+.theme-amiga .toolbar {
+  background: repeating-linear-gradient(90deg, #0055aa 0px, #0055aa 2px, #ffffff 2px, #ffffff 4px) !important;
+  height: 28px !important; border-bottom: 2px solid #000;
+}
+.theme-amiga .toolbar-title { color: #000 !important; background: #0055aa; padding: 0 8px; }
+.theme-amiga .panel-header { background: #ff8800 !important; color: #000 !important; border: 2px solid #000; }
+
+/* ═══════════════════════════════════════════════════════════════
+   AURORA BOREALIS — Flowing gradient toolbar + glowing elements
+   ═══════════════════════════════════════════════════════════════ */
+.theme-aurora .toolbar {
+  background: linear-gradient(90deg, #001a00, #002233, #001a33, #002a1a, #001a00) !important;
+  background-size: 400% 100% !important;
+  animation: aurora-flow 12s ease infinite !important;
+}
+.theme-aurora .btn-small, .theme-aurora .tab.active {
+  box-shadow: 0 0 15px #00ff8840, 0 0 30px #00ff8820;
+  transition: box-shadow 0.3s;
+}
+.theme-aurora .btn-small:hover { box-shadow: 0 0 25px #00ff8860, 0 0 50px #00ff8840; }
+@keyframes aurora-flow { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   NEO TOKYO — Neon glow EVERYWHERE, pulsing borders
+   ═══════════════════════════════════════════════════════════════ */
+.theme-neotokyo .toolbar { box-shadow: 0 2px 30px #ff006650; border-bottom: 1px solid #ff006680; }
+.theme-neotokyo .btn-small {
+  box-shadow: 0 0 10px #00ffff50; text-shadow: 0 0 6px #00ffff;
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+.theme-neotokyo .tab.active { box-shadow: 0 0 15px #ff006670; text-shadow: 0 0 8px #ff0066; }
+.theme-neotokyo .tree-panel { border-right: 1px solid #ff006650; box-shadow: inset -6px 0 30px #ff006615; }
+.theme-neotokyo .toolbar-title { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff60; }
+@keyframes neon-pulse { 0%,100% { box-shadow: 0 0 10px #00ffff50; } 50% { box-shadow: 0 0 20px #00ffff80; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   HOLOGRAM — Glass morphism, frosted panels, transparency
+   ═══════════════════════════════════════════════════════════════ */
+.theme-hologram .toolbar { backdrop-filter: blur(16px); background: rgba(10,15,25,0.75) !important; border-bottom: 1px solid rgba(0,170,255,0.2); }
+.theme-hologram .tree-panel { backdrop-filter: blur(12px); background: rgba(15,20,30,0.6) !important; border-right: 1px solid rgba(0,170,255,0.15); }
+.theme-hologram .property-panel { backdrop-filter: blur(10px); background: rgba(10,10,15,0.5) !important; }
+.theme-hologram .btn-small { backdrop-filter: blur(6px); background: rgba(0,170,255,0.15) !important; border: 1px solid rgba(0,170,255,0.25); }
+.theme-hologram .tab.active { backdrop-filter: blur(6px); background: rgba(0,170,255,0.12) !important; border: 1px solid rgba(0,170,255,0.3); }
+.theme-hologram .panel-header { border-bottom: 1px solid rgba(0,170,255,0.15); }
+
+/* ═══════════════════════════════════════════════════════════════
+   MATRIX — CRT scanlines + green phosphor + ANIMATED RAIN
+   Using CSS pseudo-elements for the digital rain effect
+   ═══════════════════════════════════════════════════════════════ */
+.theme-matrix { text-shadow: 0 0 8px #00ff41, 0 0 2px #00ff41; font-family: "Courier New", monospace !important; }
+.theme-matrix * { font-family: inherit !important; }
+/* CRT scanline overlay */
+.theme-matrix::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.04) 2px, rgba(0,255,65,0.04) 4px);
+}
+/* Matrix rain characters overlay */
+.theme-matrix::after {
+  content: "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ012345789Z:.\"=*+-<>¦|çﾘ";
+  position: fixed; top: -100%; left: 0; right: 0; height: 300%;
+  pointer-events: none; z-index: 9999;
+  font-family: "MS Gothic", "Courier New", monospace;
+  font-size: 14px; line-height: 1.2; letter-spacing: 2em;
+  color: rgba(0,255,65,0.15); word-break: break-all;
+  animation: matrix-rain 20s linear infinite;
+  writing-mode: vertical-rl; text-orientation: upright;
+}
+@keyframes matrix-rain {
+  0% { transform: translateY(-66%); }
+  100% { transform: translateY(0%); }
+}
+.theme-matrix .toolbar { border-bottom: 1px solid #00ff41; background: rgba(0,10,0,0.9) !important; }
+.theme-matrix .btn-small { box-shadow: 0 0 8px #00ff4150; border: 1px solid #00ff4140; }
+.theme-matrix .toolbar-title { text-shadow: 0 0 15px #00ff41, 0 0 30px #00ff4180; font-size: 22px !important; }
+.theme-matrix .status-bar { text-shadow: 0 0 5px #00ff41; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LCARS — Star Trek computer interface
+   Rounded sidebar, colored block panels, Federation aesthetic
+   Based on the reference image: colored rounded panel edges
+   ═══════════════════════════════════════════════════════════════ */
+.theme-lcars { font-family: "Century Gothic", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif !important; }
+.theme-lcars * { font-family: inherit !important; }
+.theme-lcars .toolbar {
+  background: #000 !important;
+  border-bottom: none;
+  padding-left: 40px !important;
+  position: relative;
+  height: 56px !important;
+  line-height: 56px !important;
+}
+/* LCARS left bracket shape */
+.theme-lcars .toolbar::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 30px;
+  background: #cc6699; border-radius: 0 0 20px 0;
+}
+.theme-lcars .toolbar::after {
+  content: ""; position: absolute; right: 0; top: 0; width: 120px; height: 100%;
+  background: linear-gradient(90deg, transparent, #ff9900 30%, #ff9900);
+  border-radius: 0 0 0 20px;
+}
+.theme-lcars .toolbar-title {
+  font-size: 24px !important; text-transform: uppercase; letter-spacing: 0.1em;
+  color: #ff9900 !important;
+}
+.theme-lcars .tree-panel {
+  border-right: none; position: relative;
+  background: #000 !important; padding-left: 40px !important;
+}
+/* LCARS left sidebar colored strip */
+.theme-lcars .tree-panel::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 30px;
+  background: linear-gradient(180deg, #cc6699 0%, #cc6699 30%, #9999cc 30%, #9999cc 60%, #cc99cc 60%, #cc99cc 100%);
+  border-radius: 0 20px 20px 0;
+}
+.theme-lcars .panel-header {
+  background: #cc6699 !important; color: #000 !important;
+  font-weight: 700; font-size: 16px !important;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-radius: 0 20px 20px 0 !important;
+  margin-left: -40px; padding-left: 50px !important;
+}
+.theme-lcars .property-panel .panel-header {
+  background: #ff9900 !important;
+  border-radius: 20px 0 0 20px !important;
+  margin-left: 0; margin-right: 0;
+}
+.theme-lcars .btn-small {
+  border-radius: 14px !important; border: none;
+  background: #9999cc !important; color: #000 !important;
+  font-weight: 700; text-transform: uppercase;
+  font-size: 12px !important; padding: 4px 16px !important;
+}
+.theme-lcars .btn-small:hover { background: #cccc99 !important; }
+.theme-lcars .tab {
+  border-radius: 14px !important; text-transform: uppercase;
+  font-weight: 700; letter-spacing: 0.05em;
+}
+.theme-lcars .tab.active {
+  background: #ff9900 !important; color: #000 !important;
+  border-radius: 14px !important;
+}
+.theme-lcars .status-bar {
+  background: #000 !important;
+  border-top: none; position: relative;
+  padding-left: 40px !important;
+}
+.theme-lcars .status-bar::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 30px;
+  background: #9999cc; border-radius: 0 20px 0 0;
+}
+.theme-lcars .status-bar::after {
+  content: "STARFLEET COMMAND UPLINK"; position: absolute; right: 12px;
+  color: #cc6699; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPERIAL HQ — Star Wars holographic blue, scanlines
+   ═══════════════════════════════════════════════════════════════ */
+.theme-imperial::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(33,150,243,0.025) 4px, rgba(33,150,243,0.025) 8px);
+}
+.theme-imperial .toolbar { box-shadow: 0 1px 20px #2196f330; }
+.theme-imperial .toolbar-title { text-shadow: 0 0 12px #2196f3, 0 0 24px #2196f360; font-size: 22px !important; }
+.theme-imperial .btn-small { box-shadow: 0 0 10px #2196f340; }
+
+/* ═══════════════════════════════════════════════════════════════
+   K-POP SPARKLE — Shimmer gradients, sparkle animation
+   ═══════════════════════════════════════════════════════════════ */
+.theme-kpop .tab.active {
+  background: linear-gradient(135deg, #ff69b4, #da70d6, #9370db, #ff69b4) !important;
+  background-size: 300% 300% !important;
+  animation: kpop-shimmer 4s ease infinite !important;
+  color: #fff !important;
+}
+.theme-kpop .toolbar {
+  background: linear-gradient(90deg, #2d1b4e, #3d1b5e, #4d2b6e, #3d1b5e, #2d1b4e) !important;
+  background-size: 200% 100% !important;
+  animation: kpop-shimmer 6s ease infinite !important;
+}
+.theme-kpop .toolbar-title {
+  background: linear-gradient(90deg, #ff69b4, #da70d6, #9370db, #ff69b4) !important;
+  -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  background-size: 300% 100% !important; animation: kpop-shimmer 3s ease infinite !important;
+  font-size: 22px !important; font-weight: 800 !important;
+}
+.theme-kpop .btn-small { box-shadow: 0 0 12px #ff69b440; }
+@keyframes kpop-shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   CYBERPUNK 2077 — Glitch on hover, neon yellow pulsing
+   ═══════════════════════════════════════════════════════════════ */
+.theme-cyberpunk .toolbar { border-bottom: 3px solid #fcee09; box-shadow: 0 3px 20px #fcee0930; }
+.theme-cyberpunk .toolbar-title { text-shadow: 0 0 12px #fcee09, 0 0 24px #fcee0960; font-size: 22px !important; }
+.theme-cyberpunk .tab.active { text-shadow: 0 0 10px #fcee09; box-shadow: 0 0 15px #fcee0940; }
+.theme-cyberpunk .btn-small:hover { animation: cyber-glitch 0.3s ease; }
+.theme-cyberpunk .tree-panel { border-right: 1px solid #fcee0930; }
+@keyframes cyber-glitch {
+  0% { transform: translate(0); filter: hue-rotate(0deg); }
+  20% { transform: translate(-3px, 2px); filter: hue-rotate(90deg); }
+  40% { transform: translate(3px, -2px); filter: hue-rotate(180deg); }
+  60% { transform: translate(-2px, -1px); filter: hue-rotate(270deg); }
+  80% { transform: translate(2px, 1px); filter: hue-rotate(360deg); }
+  100% { transform: translate(0); filter: hue-rotate(0deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VAPORWAVE — Rainbow gradient title, retro aesthetic
+   ═══════════════════════════════════════════════════════════════ */
+.theme-vaporwave .toolbar-title {
+  background: linear-gradient(90deg, #ff71ce, #01cdfe, #05ffa1, #b967ff, #ff71ce) !important;
+  -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  background-size: 300% 100% !important; animation: vaporwave-flow 5s linear infinite !important;
+  font-style: italic; font-size: 24px !important; font-weight: 800 !important;
+}
+.theme-vaporwave .toolbar { border-bottom: 3px solid #b967ff; }
+.theme-vaporwave .tree-panel { border-right: 1px solid #b967ff60; }
+@keyframes vaporwave-flow { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   SYNTHWAVE SUNSET — Animated sunset gradient in status bar
+   ═══════════════════════════════════════════════════════════════ */
+.theme-synthwave .status-bar {
+  background: linear-gradient(90deg, #0a0020, #3a0060, #ff2975, #ff6b35, #ffcc00, #ff2975, #3a0060, #0a0020) !important;
+  background-size: 400% 100% !important;
+  animation: synth-sunset 15s linear infinite !important;
+  color: #fff !important; font-weight: 600;
+}
+.theme-synthwave .toolbar-title { text-shadow: 0 0 15px #ff2975, 0 0 30px #ff297560; font-size: 22px !important; }
+.theme-synthwave .toolbar { border-bottom: 2px solid #ff297580; }
+@keyframes synth-sunset { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   GLITCH ART — RGB split on title, static overlay
+   ═══════════════════════════════════════════════════════════════ */
+.theme-glitch .toolbar-title { animation: glitch-text 3s infinite; position: relative; font-size: 24px !important; }
+.theme-glitch .toolbar {
+  background: linear-gradient(90deg, #0a0a0a, #151515, #0a0a0a) !important;
+  border-bottom: 2px solid; border-image: linear-gradient(90deg, #ff0000, #00ff00, #0000ff) 1;
+}
+@keyframes glitch-text {
+  0%,85%,100% { text-shadow: none; transform: translate(0); }
+  86% { text-shadow: -3px 0 #ff0000, 3px 0 #00ff00; transform: translate(-2px, 1px) skewX(-1deg); }
+  88% { text-shadow: 3px 0 #ff0000, -3px 0 #0000ff; transform: translate(2px, -1px) skewX(1deg); }
+  90% { text-shadow: -2px 0 #00ff00, 2px 0 #ff0000; transform: translate(-1px, -1px); }
+  92% { text-shadow: 2px 0 #0000ff, -2px 0 #00ff00; transform: translate(1px, 1px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RETROWAVE GRID — Neon borders, perspective grid feel
+   ═══════════════════════════════════════════════════════════════ */
+.theme-retrowave .toolbar {
+  border-bottom: 3px solid #ff6ec7;
+  box-shadow: 0 3px 25px #ff6ec740;
+}
+.theme-retrowave .toolbar-title {
+  text-shadow: 0 0 15px #00d4ff, 0 0 30px #00d4ff80, 0 0 60px #00d4ff40;
+  font-size: 24px !important;
+}
+.theme-retrowave .status-bar {
+  background: linear-gradient(0deg, #ff6ec730, transparent) !important;
+  border-top: 3px solid #00d4ff;
+  box-shadow: 0 -6px 30px #00d4ff30;
+}
+.theme-retrowave .tree-panel { border-right: 1px solid #ff6ec740; }
+.theme-retrowave .btn-small { box-shadow: 0 0 12px #00d4ff40; text-shadow: 0 0 6px #00d4ff; }

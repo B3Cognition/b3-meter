@@ -1,0 +1,124 @@
+/* LogViewer panel */
+
+.log-viewer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  min-height: 36px;
+  border-top: 1px solid var(--border, #334155);
+  background: var(--bg-secondary, #1e293b);
+}
+
+.log-viewer-collapsed {
+  max-height: 36px;
+}
+
+.log-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border, #334155);
+  flex-shrink: 0;
+}
+
+.log-viewer-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary, #94a3b8);
+  flex: 1;
+}
+
+.log-viewer-toggle,
+.log-viewer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+}
+
+.log-viewer-toggle:hover,
+.log-viewer-btn:hover {
+  background: var(--bg-tertiary, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+.log-viewer-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.log-viewer-body {
+  flex: 1;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 4px 0;
+}
+
+.log-viewer-empty {
+  padding: 12px;
+  color: var(--text-secondary, #64748b);
+  font-style: italic;
+  text-align: center;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.log-entry:hover {
+  background: var(--bg-tertiary, #334155);
+}
+
+.log-entry-time {
+  color: var(--text-secondary, #64748b);
+  flex-shrink: 0;
+  min-width: 85px;
+}
+
+.log-entry-level {
+  font-weight: 600;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.log-entry-level.log-level-info {
+  color: #60a5fa;
+}
+
+.log-entry-level.log-level-warn {
+  color: #fbbf24;
+}
+
+.log-entry-level.log-level-error {
+  color: #f87171;
+}
+
+.log-entry-msg {
+  color: var(--text-primary, #e2e8f0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-entry.log-level-error .log-entry-msg {
+  color: #fca5a5;
+}
+
+.log-entry.log-level-warn .log-entry-msg {
+  color: #fde68a;
+}

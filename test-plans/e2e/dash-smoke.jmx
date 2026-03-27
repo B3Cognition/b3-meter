@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="DASH Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against dash-mock - fetches manifest.mpd, init.mp4, and 3 segments per quality</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="DASH_HOST" elementType="Argument">
+            <stringProp name="Argument.name">DASH_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(dash.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="DASH_PORT" elementType="Argument">
+            <stringProp name="Argument.name">DASH_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(dash.port,8086)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <!-- Thread Group: DASH Clients -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="DASH Clients" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- Step 1: Fetch MPD manifest -->
+        <DASHSampler testclass="DASHSampler" testname="GET manifest.mpd" enabled="true">
+          <stringProp name="DASHSampler.domain">${DASH_HOST}</stringProp>
+          <stringProp name="DASHSampler.port">${DASH_PORT}</stringProp>
+          <stringProp name="DASHSampler.protocol">http</stringProp>
+          <stringProp name="DASHSampler.path">/live/manifest.mpd</stringProp>
+          <stringProp name="DASHSampler.method">GET</stringProp>
+          <stringProp name="DASHSampler.action">manifest</stringProp>
+        </DASHSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert MPD" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="mpd">MPD</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert AdaptationSet" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="adaptation">AdaptationSet</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- Step 2: Fetch 720p init segment -->
+        <DASHSampler testclass="DASHSampler" testname="GET 720p init.mp4" enabled="true">
+          <stringProp name="DASHSampler.domain">${DASH_HOST}</stringProp>
+          <stringProp name="DASHSampler.port">${DASH_PORT}</stringProp>
+          <stringProp name="DASHSampler.protocol">http</stringProp>
+          <stringProp name="DASHSampler.path">/live/720p/init.mp4</stringProp>
+          <stringProp name="DASHSampler.method">GET</stringProp>
+          <stringProp name="DASHSampler.action">init</stringProp>
+        </DASHSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- Step 3: Fetch 3 media segments at 720p -->
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Fetch 3 Segments (720p)" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Segment Counter" enabled="true">
+            <stringProp name="CounterConfig.start">0</stringProp>
+            <stringProp name="CounterConfig.end">2</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">SEG_NUM</stringProp>
+            <boolProp name="CounterConfig.per_user">true</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <DASHSampler testclass="DASHSampler" testname="GET 720p segment" enabled="true">
+            <stringProp name="DASHSampler.domain">${DASH_HOST}</stringProp>
+            <stringProp name="DASHSampler.port">${DASH_PORT}</stringProp>
+            <stringProp name="DASHSampler.protocol">http</stringProp>
+            <stringProp name="DASHSampler.path">/live/720p/segment-${SEG_NUM}.m4s</stringProp>
+            <stringProp name="DASHSampler.method">GET</stringProp>
+            <stringProp name="DASHSampler.action">segment</stringProp>
+          </DASHSampler>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="49586">200</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">8</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+
+        <!-- Step 4: Fetch 480p init + 3 segments (adaptive bitrate switch) -->
+        <DASHSampler testclass="DASHSampler" testname="GET 480p init.mp4" enabled="true">
+          <stringProp name="DASHSampler.domain">${DASH_HOST}</stringProp>
+          <stringProp name="DASHSampler.port">${DASH_PORT}</stringProp>
+          <stringProp name="DASHSampler.protocol">http</stringProp>
+          <stringProp name="DASHSampler.path">/live/480p/init.mp4</stringProp>
+          <stringProp name="DASHSampler.method">GET</stringProp>
+          <stringProp name="DASHSampler.action">init</stringProp>
+        </DASHSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Fetch 3 Segments (480p)" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </LoopController>
+        <hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Segment Counter 480p" enabled="true">
+            <stringProp name="CounterConfig.start">3</stringProp>
+            <stringProp name="CounterConfig.end">5</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">SEG_NUM_480</stringProp>
+            <boolProp name="CounterConfig.per_user">true</boolProp>
+          </CounterConfig>
+          <hashTree/>
+          <DASHSampler testclass="DASHSampler" testname="GET 480p segment" enabled="true">
+            <stringProp name="DASHSampler.domain">${DASH_HOST}</stringProp>
+            <stringProp name="DASHSampler.port">${DASH_PORT}</stringProp>
+            <stringProp name="DASHSampler.protocol">http</stringProp>
+            <stringProp name="DASHSampler.path">/live/480p/segment-${SEG_NUM_480}.m4s</stringProp>
+            <stringProp name="DASHSampler.method">GET</stringProp>
+            <stringProp name="DASHSampler.action">segment</stringProp>
+          </DASHSampler>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert 200" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="49586">200</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">8</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

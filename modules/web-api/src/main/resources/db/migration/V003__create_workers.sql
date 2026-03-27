@@ -1,0 +1,16 @@
+CREATE TABLE workers (
+    id VARCHAR(36) PRIMARY KEY,
+    hostname VARCHAR(255) NOT NULL,
+    port INTEGER NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE',
+    last_heartbeat TIMESTAMP,
+    registered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE worker_assignments (
+    id VARCHAR(36) PRIMARY KEY,
+    run_id VARCHAR(36) NOT NULL REFERENCES test_runs(id),
+    worker_id VARCHAR(36) NOT NULL REFERENCES workers(id),
+    assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'ASSIGNED'
+);

@@ -1,0 +1,366 @@
+/* ── Self Smoke Panel ── */
+
+.selfsmoke-panel {
+  padding: 16px;
+  max-width: 840px;
+}
+
+.selfsmoke-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--accent, #3b82f6);
+}
+
+.selfsmoke-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+  margin: 0;
+}
+
+.selfsmoke-header .selfsmoke-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: auto;
+}
+
+.selfsmoke-desc {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0 0 16px;
+}
+
+/* ── Section headers ── */
+
+.selfsmoke-section {
+  margin-bottom: 20px;
+}
+
+.selfsmoke-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.selfsmoke-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.selfsmoke-section-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── Buttons ── */
+
+.selfsmoke-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border, #334155);
+  border-radius: 5px;
+  background: var(--bg-secondary, #1e293b);
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.selfsmoke-btn:hover {
+  background: var(--bg-tertiary, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+.selfsmoke-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.selfsmoke-btn-start {
+  background: #22c55e;
+  color: #fff;
+  border-color: #22c55e;
+}
+
+.selfsmoke-btn-start:hover {
+  background: #16a34a;
+}
+
+.selfsmoke-btn-stop {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.selfsmoke-btn-stop:hover {
+  background: #dc2626;
+}
+
+.selfsmoke-btn-smoke {
+  background: #8b5cf6;
+  color: #fff;
+  border-color: #8b5cf6;
+  padding: 7px 16px;
+  font-size: 12px;
+}
+
+.selfsmoke-btn-smoke:hover {
+  background: #7c3aed;
+}
+
+/* ── Status table ── */
+
+.selfsmoke-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 4px 0 12px;
+}
+
+.selfsmoke-table th {
+  text-align: left;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+  border-bottom: 2px solid var(--border, #334155);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.selfsmoke-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+.selfsmoke-table tbody tr:hover {
+  background: var(--bg-tertiary, #334155);
+}
+
+/* ── Status indicators ── */
+
+.selfsmoke-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.selfsmoke-dot-up {
+  background: #22c55e;
+  box-shadow: 0 0 4px #22c55e80;
+}
+
+.selfsmoke-dot-down {
+  background: #ef4444;
+  box-shadow: 0 0 4px #ef444480;
+}
+
+.selfsmoke-status-cell {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.selfsmoke-status-up {
+  color: #4ade80;
+}
+
+.selfsmoke-status-down {
+  color: #f87171;
+}
+
+/* ── Smoke results rows ── */
+
+.selfsmoke-row-pass {
+  background: #22c55e08;
+}
+
+.selfsmoke-row-warn {
+  background: #f59e0b08;
+}
+
+.selfsmoke-row-fail td {
+  background: #ef444410;
+}
+
+.selfsmoke-row-skip {
+  opacity: 0.5;
+}
+
+/* ── Result badges ── */
+
+.selfsmoke-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.selfsmoke-badge-pass {
+  background: #22c55e20;
+  color: #4ade80;
+}
+
+.selfsmoke-badge-warn {
+  background: #f59e0b20;
+  color: #fbbf24;
+}
+
+.selfsmoke-badge-fail {
+  background: #ef444420;
+  color: #f87171;
+}
+
+.selfsmoke-badge-skip {
+  background: var(--bg-tertiary, #334155);
+  color: var(--text-secondary, #94a3b8);
+}
+
+.selfsmoke-badge-error {
+  background: #ef444420;
+  color: #f87171;
+}
+
+/* ── Summary bar ── */
+
+.selfsmoke-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--bg-tertiary, #334155);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent, #3b82f6);
+  font-size: 13px;
+  color: var(--text-primary, #e2e8f0);
+  margin-top: 8px;
+}
+
+.selfsmoke-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.selfsmoke-summary-value {
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.selfsmoke-summary-label {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 11px;
+}
+
+.selfsmoke-summary-pass {
+  color: #4ade80;
+}
+
+.selfsmoke-summary-fail {
+  color: #f87171;
+}
+
+/* ── Spinner ── */
+
+.selfsmoke-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border, #334155);
+  border-top-color: var(--accent, #3b82f6);
+  border-radius: 50%;
+  animation: selfsmoke-spin 0.6s linear infinite;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+@keyframes selfsmoke-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Running plan indicator ── */
+
+.selfsmoke-running-plan {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #3b82f610;
+  border: 1px solid #3b82f630;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-primary, #e2e8f0);
+}
+
+/* ── Divider ── */
+
+.selfsmoke-divider {
+  height: 1px;
+  background: var(--border, #334155);
+  margin: 16px 0;
+}
+
+/* ── Error message ── */
+
+.selfsmoke-error {
+  font-size: 12px;
+  padding: 8px 12px;
+  background: #ef444410;
+  border: 1px solid #ef444430;
+  border-radius: 6px;
+  color: #f87171;
+  margin-bottom: 12px;
+}
+
+/* ── Count badges in section header ── */
+
+.selfsmoke-count {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+}
+
+.selfsmoke-count-up {
+  background: #22c55e20;
+  color: #4ade80;
+}
+
+.selfsmoke-count-down {
+  background: #ef444420;
+  color: #f87171;
+}
+
+/* ── Response time mono ── */
+
+.selfsmoke-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+}

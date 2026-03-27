@@ -1,0 +1,17 @@
+{
+  "engine_throughput": {
+    "target": 2000,
+    "tolerance_pct": 5,
+    "_comment": "samples/sec — measured by EngineThroughputBenchmark (100 VUs, 60 s)"
+  },
+  "virtual_thread_scale": {
+    "max_heap_gb": 4,
+    "max_platform_threads": 200,
+    "_comment": "peak heap (GB) and platform-thread count at 5 000 VUs"
+  },
+  "api_latency_p99_ms": {
+    "target": 200,
+    "tolerance_pct": 10,
+    "_comment": "p99 latency (ms) — measured by ApiLatencyBenchmark (1 000 in-process samples)"
+  }
+}

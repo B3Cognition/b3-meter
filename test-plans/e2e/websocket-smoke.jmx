@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="WebSocket Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against ws-mock server - 5 VUs subscribe and receive 3 messages</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="WS_HOST" elementType="Argument">
+            <stringProp name="Argument.name">WS_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(ws.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="WS_PORT" elementType="Argument">
+            <stringProp name="Argument.name">WS_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(ws.port,8082)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="WebSocket Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- WebSocket Open Connection -->
+        <WebSocketSampler guiclass="WebSocketSamplerGui" testclass="WebSocketSampler" testname="WS Connect" enabled="true">
+          <stringProp name="serverAddress">${WS_HOST}</stringProp>
+          <stringProp name="serverPort">${WS_PORT}</stringProp>
+          <stringProp name="implementation">RFC6455</stringProp>
+          <stringProp name="protocol">ws</stringProp>
+          <stringProp name="contextPath">/</stringProp>
+          <stringProp name="connectionTimeout">5000</stringProp>
+          <stringProp name="responseTimeout">10000</stringProp>
+          <boolProp name="binaryContent">false</boolProp>
+        </WebSocketSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert welcome" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="welcome">welcome</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <!-- Send subscribe message -->
+        <WebSocketSampler guiclass="WebSocketSamplerGui" testclass="WebSocketSampler" testname="WS Subscribe" enabled="true">
+          <stringProp name="requestData">{"event":"subscribe","url":"test/updates"}</stringProp>
+          <stringProp name="serverAddress">${WS_HOST}</stringProp>
+          <stringProp name="serverPort">${WS_PORT}</stringProp>
+          <stringProp name="implementation">RFC6455</stringProp>
+          <stringProp name="protocol">ws</stringProp>
+          <stringProp name="contextPath">/</stringProp>
+          <stringProp name="connectionTimeout">5000</stringProp>
+          <stringProp name="responseTimeout">5000</stringProp>
+          <boolProp name="binaryContent">false</boolProp>
+        </WebSocketSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert subscribed" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="subscribed">subscribed</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <!-- Receive 3 update messages -->
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Receive 3 Messages" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </LoopController>
+        <hashTree>
+          <WebSocketSampler guiclass="WebSocketSamplerGui" testclass="WebSocketSampler" testname="WS Read Update" enabled="true">
+            <stringProp name="serverAddress">${WS_HOST}</stringProp>
+            <stringProp name="serverPort">${WS_PORT}</stringProp>
+            <stringProp name="implementation">RFC6455</stringProp>
+            <stringProp name="protocol">ws</stringProp>
+            <stringProp name="contextPath">/</stringProp>
+            <stringProp name="connectionTimeout">5000</stringProp>
+            <stringProp name="responseTimeout">5000</stringProp>
+            <boolProp name="binaryContent">false</boolProp>
+          </WebSocketSampler>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert update" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="update">update</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">2</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

@@ -1,0 +1,373 @@
+package com.jmeternext.web.api.service;
+
+import com.jmeternext.engine.service.EngineService;
+import com.jmeternext.engine.service.SampleBucket;
+import com.jmeternext.engine.service.SampleBucketConsumer;
+import com.jmeternext.engine.service.SampleStreamBroker;
+import com.jmeternext.engine.service.TestRunContext;
+import com.jmeternext.engine.service.TestRunContextRegistry;
+import com.jmeternext.engine.service.TestRunHandle;
+import com.jmeternext.web.api.controller.dto.MetricsDto;
+import com.jmeternext.web.api.controller.dto.StartRunRequest;
+import com.jmeternext.web.api.controller.dto.TestRunDto;
+import com.jmeternext.web.api.metrics.LoadTestMetrics;
+import com.jmeternext.web.api.repository.TestPlanRepository;
+import com.jmeternext.web.api.repository.TestRunEntity;
+import com.jmeternext.web.api.repository.TestRunRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Business logic for test run lifecycle management.
+ *
+ * <p>Handles starting, stopping, and querying test runs. Delegates execution to
+ * the injected {@link EngineService} (backed by {@code EngineServiceImpl}) and
+ * persists run state to the database via {@link TestRunRepository}.
+ *
+ * <p>Metrics are tracked via a {@link SampleStreamBroker} subscription that
+ * captures the most-recent {@link SampleBucket} per run for polling-first access
+ * (R-05).
+ */
+@Service
+public class TestRunService {
+
+    private static final Logger LOG = Logger.getLogger(TestRunService.class.getName());
+
+    /** Default owner when none is specified. */
+    private static final String DEFAULT_OWNER = "system";
+
+    /** Default virtual-user count when not provided in the request. */
+    private static final int DEFAULT_VIRTUAL_USERS = 1;
+
+    /** Default duration — 0 means run until plan completes naturally. */
+    private static final long DEFAULT_DURATION_SECONDS = 0L;
+
+    private final TestRunRepository runRepository;
+    private final TestPlanRepository testPlanRepository;
+    private final SampleStreamBroker broker;
+    private final EngineService engineService;
+    private final com.jmeternext.web.api.security.ResourceQuotaService quotaService;
+    private final LoadTestMetrics loadTestMetrics;
+
+    /**
+     * Stores the most-recent {@link SampleBucket} per runId, keyed by runId.
+     * Used to serve GET /metrics without subscribing a new broker consumer on
+     * each poll request.
+     */
+    private final ConcurrentHashMap<String, SampleBucket> latestBuckets = new ConcurrentHashMap<>();
+
+    /**
+     * Consumer references keyed by runId so they can be unsubscribed when the run ends.
+     */
+    private final ConcurrentHashMap<String, SampleBucketConsumer> consumers = new ConcurrentHashMap<>();
+
+    public TestRunService(TestRunRepository runRepository,
+                          TestPlanRepository testPlanRepository,
+                          SampleStreamBroker broker,
+                          EngineService engineService,
+                          com.jmeternext.web.api.security.ResourceQuotaService quotaService,
+                          LoadTestMetrics loadTestMetrics) {
+        this.runRepository = runRepository;
+        this.testPlanRepository = testPlanRepository;
+        this.broker = broker;
+        this.engineService = engineService;
+        this.quotaService = quotaService;
+        this.loadTestMetrics = loadTestMetrics;
+    }
+
+    // -------------------------------------------------------------------------
+    // Start
+    // -------------------------------------------------------------------------
+
+    /**
+     * Starts a new test run for the given plan.
+     *
+     * <p>Delegates execution to the injected {@link EngineService}. The engine
+     * creates and registers its own {@link TestRunContext}; this method persists
+     * the initial run entity to the database and subscribes a broker consumer to
+     * capture metrics.
+     *
+     * <p>The {@link TestRunHandle#completion()} future is observed asynchronously
+     * to update the run's final status in the database when the engine finishes.
+     *
+     * @param request start parameters; {@code planId} must not be null or blank
+     * @return the persisted run as a DTO in RUNNING state
+     * @throws IllegalArgumentException if {@code planId} is null or blank
+     */
+    public TestRunDto startRun(StartRunRequest request) {
+        if (request.planId() == null || request.planId().isBlank()) {
+            throw new IllegalArgumentException("planId must not be blank");
+        }
+
+        int virtualUsers = request.virtualUsers() != null
+                ? request.virtualUsers()
+                : DEFAULT_VIRTUAL_USERS;
+        long durationSeconds = request.durationSeconds() != null
+                ? request.durationSeconds()
+                : DEFAULT_DURATION_SECONDS;
+
+        // Enforce resource quotas before starting (FR-SEC-007)
+        quotaService.checkQuota(DEFAULT_OWNER, virtualUsers, (int) durationSeconds);
+
+        // Build property overrides for the engine
+        Properties overrides = new Properties();
+        overrides.setProperty("jmeter.threads",   String.valueOf(virtualUsers));
+        overrides.setProperty("jmeter.duration",  String.valueOf(durationSeconds));
+
+        // Load actual plan tree data from the database — auto-create if missing
+        Map<String, Object> treeData = Collections.emptyMap();
+        var planOpt = testPlanRepository.findById(request.planId());
+        if (planOpt.isEmpty()) {
+            // Plan was created in the UI but never persisted — create a stub record
+            var stub = new com.jmeternext.web.api.repository.TestPlanEntity(
+                    request.planId(),
+                    request.planId(),
+                    DEFAULT_OWNER,
+                    "{}",
+                    java.time.Instant.now(),
+                    java.time.Instant.now(),
+                    null
+            );
+            testPlanRepository.save(stub);
+            LOG.log(Level.INFO, "Auto-created test_plans record for planId={0}", request.planId());
+        } else if (planOpt.get().treeData() != null) {
+            treeData = Map.of(
+                "planName", planOpt.get().name(),
+                "jmxContent", planOpt.get().treeData(),
+                "treeData", planOpt.get().treeData(),
+                "virtualUsers", virtualUsers,
+                "durationSeconds", durationSeconds
+            );
+        }
+
+        // Delegate to engine — it creates the TestRunContext and registers it
+        TestRunHandle handle = engineService.startRun(
+                request.planId(),
+                treeData,
+                overrides
+        );
+        String runId = handle.runId();
+
+        // Record run start in Prometheus metrics.
+        loadTestMetrics.recordRunStarted();
+
+        // Subscribe to broker to capture latest bucket for metrics polling (R-05).
+        SampleBucketConsumer consumer = bucket -> {
+            latestBuckets.put(runId, bucket);
+            loadTestMetrics.recordSamples(bucket.sampleCount(), bucket.errorCount(), bucket.avgResponseTime());
+        };
+        consumers.put(runId, consumer);
+        broker.subscribe(runId, consumer);
+
+        // Persist initial RUNNING state.
+        TestRunEntity entity = new TestRunEntity(
+                runId,
+                request.planId(),
+                TestRunContext.TestRunStatus.RUNNING.name(),
+                handle.startedAt(),
+                null,
+                0L,
+                0L,
+                DEFAULT_OWNER
+        );
+        runRepository.create(entity);
+
+        // Observe completion to update DB status when the engine finishes
+        handle.completion().whenComplete((result, ex) -> {
+            try {
+                String finalStatus = result != null
+                        ? result.finalStatus().name()
+                        : TestRunContext.TestRunStatus.ERROR.name();
+                long totalSamples = result != null ? result.totalSamples() : 0L;
+                long errorCount   = result != null ? result.errorCount()   : 0L;
+                runRepository.updateStatus(runId, finalStatus);
+                // Unsubscribe broker consumer
+                SampleBucketConsumer c = consumers.remove(runId);
+                if (c != null) {
+                    broker.unsubscribe(runId, c);
+                }
+                // Record run completion in Prometheus metrics.
+                loadTestMetrics.recordRunCompleted();
+            } catch (Exception updateEx) {
+                LOG.log(Level.WARNING, "Failed to update run status for " + runId, updateEx);
+            }
+        });
+
+        return toDto(entity);
+    }
+
+    // -------------------------------------------------------------------------
+    // Get status
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the current status of a run.
+     *
+     * @param runId the run identifier; must not be null
+     * @return the run DTO, or empty if not found
+     */
+    public Optional<TestRunDto> getRunStatus(String runId) {
+        return runRepository.findById(runId).map(this::toDto);
+    }
+
+    // -------------------------------------------------------------------------
+    // Stop
+    // -------------------------------------------------------------------------
+
+    /**
+     * Requests a graceful stop of the given run.
+     *
+     * <p>Delegates to the engine and transitions the run to {@code STOPPING} in the DB.
+     * Returns {@code false} if the run does not exist.
+     *
+     * @param runId the run identifier; must not be null
+     * @return {@code true} if the run was found and stop was requested
+     */
+    public boolean stopRun(String runId) {
+        if (runRepository.findById(runId).isEmpty()) {
+            return false;
+        }
+        engineService.stopRun(runId);
+        return updateStatus(runId, TestRunContext.TestRunStatus.STOPPING);
+    }
+
+    /**
+     * Requests an immediate (forced) stop of the given run.
+     *
+     * <p>Delegates to the engine and transitions directly to {@code STOPPED} in the DB.
+     *
+     * @param runId the run identifier; must not be null
+     * @return {@code true} if the run was found and stopped
+     */
+    public boolean stopRunNow(String runId) {
+        if (runRepository.findById(runId).isEmpty()) {
+            return false;
+        }
+        engineService.stopRunNow(runId);
+        return finishRun(runId, TestRunContext.TestRunStatus.STOPPED);
+    }
+
+    // -------------------------------------------------------------------------
+    // Metrics
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the latest metrics snapshot for a run.
+     *
+     * <p>Reads the most-recently delivered {@link SampleBucket} from the in-memory
+     * cache populated by the broker subscription. Returns an empty snapshot when no
+     * samples have been collected yet.
+     *
+     * @param runId the run identifier; must not be null
+     * @return the metrics DTO, or empty if the run does not exist
+     */
+    public Optional<MetricsDto> getMetrics(String runId) {
+        if (runRepository.findById(runId).isEmpty()) {
+            return Optional.empty();
+        }
+        SampleBucket latest = latestBuckets.get(runId);
+        if (latest == null) {
+            return Optional.of(MetricsDto.empty(runId));
+        }
+        return Optional.of(toMetricsDto(runId, latest));
+    }
+
+    // -------------------------------------------------------------------------
+    // List
+    // -------------------------------------------------------------------------
+
+    /**
+     * Lists all runs, optionally filtered by plan identifier.
+     *
+     * @param planId filter by plan; if null, returns all runs across all plans
+     * @return list of run DTOs, possibly empty
+     */
+    public List<TestRunDto> listRuns(String planId) {
+        List<TestRunEntity> entities = planId != null
+                ? runRepository.findByPlanId(planId)
+                : runRepository.findAll();
+        return entities.stream().map(this::toDto).toList();
+    }
+
+    // -------------------------------------------------------------------------
+    // Lifecycle helpers
+    // -------------------------------------------------------------------------
+
+    private boolean finishRun(String runId, TestRunContext.TestRunStatus terminalStatus) {
+        if (runRepository.findById(runId).isEmpty()) {
+            return false;
+        }
+        TestRunContext context = TestRunContextRegistry.get(runId);
+        if (context != null) {
+            context.setStatus(terminalStatus);
+            context.setRunning(false);
+            TestRunContextRegistry.remove(runId);
+        }
+
+        // Unsubscribe broker consumer.
+        SampleBucketConsumer consumer = consumers.remove(runId);
+        if (consumer != null) {
+            broker.unsubscribe(runId, consumer);
+        }
+
+        runRepository.updateStatus(runId, terminalStatus.name());
+        loadTestMetrics.recordRunCompleted();
+        return true;
+    }
+
+    private boolean updateStatus(String runId, TestRunContext.TestRunStatus newStatus) {
+        if (runRepository.findById(runId).isEmpty()) {
+            return false;
+        }
+        TestRunContext context = TestRunContextRegistry.get(runId);
+        if (context != null) {
+            context.setStatus(newStatus);
+        }
+        runRepository.updateStatus(runId, newStatus.name());
+        return true;
+    }
+
+    // -------------------------------------------------------------------------
+    // Mapping helpers
+    // -------------------------------------------------------------------------
+
+    private TestRunDto toDto(TestRunEntity entity) {
+        return new TestRunDto(
+                entity.id(),
+                entity.planId(),
+                entity.status(),
+                entity.startedAt(),
+                entity.endedAt(),
+                entity.totalSamples(),
+                entity.errorCount(),
+                entity.ownerId()
+        );
+    }
+
+    private MetricsDto toMetricsDto(String runId, SampleBucket bucket) {
+        return new MetricsDto(
+                runId,
+                bucket.timestamp(),
+                bucket.samplerLabel(),
+                bucket.sampleCount(),
+                bucket.errorCount(),
+                bucket.avgResponseTime(),
+                bucket.minResponseTime(),
+                bucket.maxResponseTime(),
+                bucket.percentile90(),
+                bucket.percentile95(),
+                bucket.percentile99(),
+                bucket.samplesPerSecond(),
+                bucket.errorPercent()
+        );
+    }
+
+}

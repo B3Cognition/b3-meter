@@ -1,0 +1,13 @@
+entries:
+  - spec_id: "005"
+    project: "multi-protocol-engine"
+    date: "2026-03-26T01:30:00Z"
+    estimated_days: null  # no formal estimates
+    actual_days: 1
+    ratio: null
+    domain: "multi-protocol-load-testing"
+    agents_dispatched: 13
+    wall_clock_minutes: 75
+    java_tests_written: 115  # 63 wave3 + 52 rework
+    files_created: 50
+    verification_score: 1.00

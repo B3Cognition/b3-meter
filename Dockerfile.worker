@@ -1,0 +1,5 @@
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY modules/worker-node/build/libs/*.jar worker.jar
+EXPOSE 9090 8090
+ENTRYPOINT ["java", "-jar", "worker.jar"]

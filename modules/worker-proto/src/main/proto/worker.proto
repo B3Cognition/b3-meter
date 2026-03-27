@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package jmeternext.worker;
+
+import "google/protobuf/timestamp.proto";
+
+option java_package = "com.jmeternext.worker.proto";
+option java_outer_classname = "WorkerProto";
+option java_multiple_files = true;
+
+/**
+ * WorkerService — gRPC service for the controller↔worker wire protocol.
+ *
+ * Lifecycle:
+ *   1. Controller sends Configure (with test plan) → worker acks.
+ *   2. Controller sends Start (optionally with a future start_at) → worker acks.
+ *   3. Controller opens StreamResults to receive batched metrics.
+ *   4. Controller sends Stop (graceful) or StopNow (immediate) to end the run.
+ *   5. Controller can call GetHealth at any time to probe liveness.
+ */
+service WorkerService {
+    /** Upload and validate the test plan on this worker node. */
+    rpc Configure(TestPlanMessage) returns (ConfigureAck);
+
+    /** Start the previously configured test run. */
+    rpc Start(StartMessage) returns (StartAck);
+
+    /** Gracefully stop the running test (let in-flight samples complete). */
+    rpc Stop(StopMessage) returns (StopAck);
+
+    /** Immediately abort the running test without waiting for in-flight samples. */
+    rpc StopNow(StopMessage) returns (StopAck);
+
+    /** Stream aggregated result batches from the worker back to the controller. */
+    rpc StreamResults(StopMessage) returns (stream SampleResultBatch);
+
+    /** Probe worker liveness and current run state. */
+    rpc GetHealth(HealthRequest) returns (HealthStatus);
+}
+
+// ---------------------------------------------------------------------------
+// Configure phase
+// ---------------------------------------------------------------------------
+
+/** Sends the serialised JMX test plan to the worker for validation. */
+message TestPlanMessage {
+    /** Unique identifier for this test run (UUID). */
+    string run_id = 1;
+
+    /** Serialised JMX test plan content (UTF-8 encoded XML). */
+    bytes plan_content = 2;
+
+    /** Number of virtual users this worker should simulate. */
+    int32 virtual_users = 3;
+
+    /** Maximum duration in seconds; 0 means run until plan completes. */
+    int64 duration_seconds = 4;
+}
+
+/** Worker's response to a Configure RPC. */
+message ConfigureAck {
+    /** True when the plan was accepted and validated successfully. */
+    bool accepted = 1;
+
+    /** Validation message; populated on error. */
+    string message = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Start phase
+// ---------------------------------------------------------------------------
+
+/** Instructs the worker to begin executing the configured test plan. */
+message StartMessage {
+    /** Run ID, must match the preceding ConfigureAck. */
+    string run_id = 1;
+
+    /**
+     * Optional wall-clock instant at which the worker should begin sending
+     * load. When absent (or in the past) the worker starts immediately.
+     * Allows multiple workers to start in a coordinated, synchronised fashion.
+     */
+    google.protobuf.Timestamp start_at = 2;
+}
+
+/** Worker's response to a Start RPC. */
+message StartAck {
+    /** True when the worker has accepted the start instruction. */
+    bool accepted = 1;
+
+    /** Informational message; populated on error. */
+    string message = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Stop phase
+// ---------------------------------------------------------------------------
+
+/** Requests the worker to stop the named test run. */
+message StopMessage {
+    /** Run ID to stop or stream. */
+    string run_id = 1;
+}
+
+/** Worker's response to a Stop / StopNow RPC. */
+message StopAck {
+    /** True if the run was found and a stop was requested. */
+    bool accepted = 1;
+
+    /** Human-readable message. */
+    string message = 2;
+}
+
+// ---------------------------------------------------------------------------
+// Streaming results
+// ---------------------------------------------------------------------------
+
+/**
+ * A batch of aggregated sampler metrics covering one reporting interval.
+ * Workers emit one batch per sampler label per reporting window (default 5 s).
+ */
+message SampleResultBatch {
+    /** Wall-clock timestamp of the start of this reporting window. */
+    google.protobuf.Timestamp timestamp = 1;
+
+    /** JMeter sampler label (e.g. "HTTP Request – login"). */
+    string sampler_label = 2;
+
+    /** Total number of samples in this window. */
+    int64 sample_count = 3;
+
+    /** Number of samples that returned an error in this window. */
+    int64 error_count = 4;
+
+    /** Arithmetic mean response time (milliseconds) across all samples. */
+    double avg_response_time = 5;
+
+    /**
+     * Latency percentile values (milliseconds), keyed by percentile label.
+     * Conventional keys: "p50", "p90", "p95", "p99".
+     */
+    map<string, double> percentiles = 6;
+}
+
+// ---------------------------------------------------------------------------
+// Health
+// ---------------------------------------------------------------------------
+
+/** Empty probe message used when calling GetHealth. */
+message HealthRequest {
+    /** Optional run ID; when set, health report is scoped to that run. */
+    string run_id = 1;
+}
+
+/** Current liveness and load state of the worker node. */
+message HealthStatus {
+    /** Overall worker state. */
+    WorkerState state = 1;
+
+    /** Human-readable status message. */
+    string message = 2;
+
+    /** Run ID that is currently active, empty when idle. */
+    string active_run_id = 3;
+
+    /** Epoch milliseconds when this status was produced. */
+    int64 timestamp_ms = 4;
+}
+
+/** Finite set of worker lifecycle states. */
+enum WorkerState {
+    /** Default / unknown — should not appear in normal operation. */
+    WORKER_STATE_UNSPECIFIED = 0;
+
+    /** Worker is alive and not executing a test. */
+    WORKER_STATE_IDLE = 1;
+
+    /** Worker has accepted a test plan and is waiting to start. */
+    WORKER_STATE_CONFIGURED = 2;
+
+    /** Worker is actively executing a test run. */
+    WORKER_STATE_RUNNING = 3;
+
+    /** Worker is draining in-flight samples after a Stop request. */
+    WORKER_STATE_STOPPING = 4;
+
+    /** Worker encountered a fatal error. */
+    WORKER_STATE_ERROR = 5;
+}

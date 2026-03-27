@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="FTP Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against ftp-mock server on port 2121</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="FTP_HOST" elementType="Argument">
+            <stringProp name="Argument.name">FTP_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(ftp.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="FTP_PORT" elementType="Argument">
+            <stringProp name="Argument.name">FTP_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(ftp.port,2121)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="FTP Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- LIST root directory -->
+        <FTPSampler guiclass="FtpTestSampleGui" testclass="FTPSampler" testname="LIST /" enabled="true">
+          <stringProp name="FTPSampler.host">${FTP_HOST}</stringProp>
+          <intProp name="FTPSampler.port">2121</intProp>
+          <stringProp name="FTPSampler.username">anonymous</stringProp>
+          <stringProp name="FTPSampler.password"></stringProp>
+          <stringProp name="FTPSampler.path">/</stringProp>
+          <stringProp name="FTPSampler.action">list</stringProp>
+          <intProp name="FTPSampler.timeout">10000</intProp>
+        </FTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert listing contains pub" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="110593">pub</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- LIST /pub directory -->
+        <FTPSampler guiclass="FtpTestSampleGui" testclass="FTPSampler" testname="LIST /pub" enabled="true">
+          <stringProp name="FTPSampler.host">${FTP_HOST}</stringProp>
+          <intProp name="FTPSampler.port">2121</intProp>
+          <stringProp name="FTPSampler.username">anonymous</stringProp>
+          <stringProp name="FTPSampler.password"></stringProp>
+          <stringProp name="FTPSampler.path">/pub</stringProp>
+          <stringProp name="FTPSampler.action">list</stringProp>
+          <intProp name="FTPSampler.timeout">10000</intProp>
+        </FTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert listing contains readme.txt" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1234">readme.txt</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- DOWNLOAD /pub/readme.txt -->
+        <FTPSampler guiclass="FtpTestSampleGui" testclass="FTPSampler" testname="DOWNLOAD /pub/readme.txt" enabled="true">
+          <stringProp name="FTPSampler.host">${FTP_HOST}</stringProp>
+          <intProp name="FTPSampler.port">2121</intProp>
+          <stringProp name="FTPSampler.username">anonymous</stringProp>
+          <stringProp name="FTPSampler.password"></stringProp>
+          <stringProp name="FTPSampler.path">/pub/readme.txt</stringProp>
+          <stringProp name="FTPSampler.action">download</stringProp>
+          <intProp name="FTPSampler.timeout">10000</intProp>
+        </FTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert file content" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="5678">Welcome to the FTP mock server</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- DOWNLOAD /pub/data.csv -->
+        <FTPSampler guiclass="FtpTestSampleGui" testclass="FTPSampler" testname="DOWNLOAD /pub/data.csv" enabled="true">
+          <stringProp name="FTPSampler.host">${FTP_HOST}</stringProp>
+          <intProp name="FTPSampler.port">2121</intProp>
+          <stringProp name="FTPSampler.username">anonymous</stringProp>
+          <stringProp name="FTPSampler.password"></stringProp>
+          <stringProp name="FTPSampler.path">/pub/data.csv</stringProp>
+          <stringProp name="FTPSampler.action">download</stringProp>
+          <intProp name="FTPSampler.timeout">10000</intProp>
+        </FTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert CSV header" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="9012">id,name,value</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- UPLOAD test file -->
+        <FTPSampler guiclass="FtpTestSampleGui" testclass="FTPSampler" testname="UPLOAD /uploads/test.txt" enabled="true">
+          <stringProp name="FTPSampler.host">${FTP_HOST}</stringProp>
+          <intProp name="FTPSampler.port">2121</intProp>
+          <stringProp name="FTPSampler.username">anonymous</stringProp>
+          <stringProp name="FTPSampler.password"></stringProp>
+          <stringProp name="FTPSampler.path">/uploads/test.txt</stringProp>
+          <stringProp name="FTPSampler.action">upload</stringProp>
+          <stringProp name="FTPSampler.localContent">Hello from jmeter-next FTP load test!</stringProp>
+          <intProp name="FTPSampler.timeout">10000</intProp>
+        </FTPSampler>
+        <hashTree/>
+
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+          <stringProp name="ConstantTimer.delay">200</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
