@@ -1,5 +1,6 @@
 package com.jmeternext.worker.node;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.jmeternext.engine.adapter.EngineServiceImpl;
 import com.jmeternext.engine.adapter.InMemorySampleStreamBroker;
@@ -287,12 +288,14 @@ public class WorkerServiceImpl extends WorkerServiceGrpc.WorkerServiceImplBase {
         // Use the engine's internal runId for stop calls (differs from configured runId)
         String internalRunId = engineRunId != null ? engineRunId : runId;
 
+        // Mark as STOPPING first so the completion handler knows to finishRun
+        state.set(WorkerState.STOPPING);
+
         if (eng != null) {
             if (immediate) {
                 eng.stopRunNow(internalRunId);
                 LOG.log(Level.INFO, "Run {0} stop-now requested via engine", runId);
             } else {
-                state.set(WorkerState.STOPPING);
                 eng.stopRun(internalRunId);
                 LOG.log(Level.INFO, "Run {0} graceful stop requested via engine", runId);
             }
@@ -304,8 +307,6 @@ public class WorkerServiceImpl extends WorkerServiceGrpc.WorkerServiceImplBase {
         TestRunHandle handle = activeRunHandle;
         if (handle == null || handle.completion().isDone()) {
             finishRun(runId);
-        } else if (!immediate) {
-            state.set(WorkerState.STOPPING);
         }
 
         responseObserver.onNext(StopAck.newBuilder()
@@ -337,7 +338,7 @@ public class WorkerServiceImpl extends WorkerServiceGrpc.WorkerServiceImplBase {
             if (obs == null) return;
             try {
                 Instant ts = bucket.timestamp();
-                SampleResultBatch batch = SampleResultBatch.newBuilder()
+                SampleResultBatch.Builder batchBuilder = SampleResultBatch.newBuilder()
                         .setTimestamp(Timestamp.newBuilder()
                                 .setSeconds(ts.getEpochSecond())
                                 .setNanos(ts.getNano())
@@ -348,9 +349,15 @@ public class WorkerServiceImpl extends WorkerServiceGrpc.WorkerServiceImplBase {
                         .setAvgResponseTime(bucket.avgResponseTime())
                         .putPercentiles("p90", bucket.percentile90())
                         .putPercentiles("p95", bucket.percentile95())
-                        .putPercentiles("p99", bucket.percentile99())
-                        .build();
-                obs.onNext(batch);
+                        .putPercentiles("p99", bucket.percentile99());
+
+                // Attach serialized histogram for accurate distributed percentile merge
+                byte[] histBytes = bucket.hdrHistogramBytes();
+                if (histBytes != null && histBytes.length > 0) {
+                    batchBuilder.setHdrHistogram(ByteString.copyFrom(histBytes));
+                }
+
+                obs.onNext(batchBuilder.build());
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Error forwarding batch to StreamResults observer", ex);
                 resultObservers.remove(runId);

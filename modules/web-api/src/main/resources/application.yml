@@ -12,14 +12,6 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-  datasource:
-    url: jdbc:h2:file:./data/jmeter-next;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
@@ -49,11 +41,22 @@ management:
       application: jmeter-next
 
 jmeter:
-  db:
-    mode: sqlite
   http:
     maxConnections: 2000
     maxPerRoute: 200
     connectTimeoutMs: 5000
     socketTimeoutMs: 30000
     keepAliveMs: 30000
+  outputs: csv
+  output:
+    csv:
+      file: results.csv
+    json:
+      file: results.jsonl
+    influxdb:
+      url: ""
+      database: jmeter
+      measurement: jmeter_results
+      token: ""
+    prometheus:
+      port: 9270

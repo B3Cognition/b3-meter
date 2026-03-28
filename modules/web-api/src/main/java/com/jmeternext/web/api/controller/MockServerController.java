@@ -234,7 +234,7 @@ public class MockServerController {
             boolean serverUp = false;
             if (serverDef != null) {
                 try {
-                    URL url = URI.create("http://localhost:" + serverDef.port + "/health").toURL();
+                    URL url = URI.create("http://localhost:" + serverDef.healthPort + "/health").toURL();
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setConnectTimeout(2000);
                     conn.setReadTimeout(2000);

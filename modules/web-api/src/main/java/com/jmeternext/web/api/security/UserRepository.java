@@ -1,67 +1,26 @@
 package com.jmeternext.web.api.security;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JDBC repository for {@link UserEntity} and refresh-token records.
+ * In-memory repository for {@link UserEntity} and refresh-token records.
  *
- * <p>The {@code users} table schema is created by
- * {@code V004__create_users.sql}. The {@code password_hash} column is added
- * by {@code V006__add_password_hash.sql} so that the migration history stays
- * backward-compatible with existing test databases.
+ * <p>Data is held in memory for the lifetime of the application process.
+ * This removes the need for any external database while keeping the auth API functional.
  */
 @Repository
 public class UserRepository {
 
-    private static final String SELECT_BY_USERNAME = """
-            SELECT id, username, email, role, password_hash, created_at
-            FROM users
-            WHERE username = ?
-            """;
+    private final ConcurrentHashMap<String, UserEntity> usersById = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, UserEntity> usersByUsername = new ConcurrentHashMap<>();
 
-    private static final String SELECT_BY_ID = """
-            SELECT id, username, email, role, password_hash, created_at
-            FROM users
-            WHERE id = ?
-            """;
-
-    private static final String INSERT_USER = """
-            INSERT INTO users (id, username, email, role, password_hash, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """;
-
-    private static final String INSERT_REFRESH_TOKEN = """
-            INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            """;
-
-    private static final String SELECT_REFRESH_TOKEN = """
-            SELECT user_id FROM refresh_tokens
-            WHERE token_hash = ? AND expires_at > CURRENT_TIMESTAMP
-            """;
-
-    private static final String DELETE_REFRESH_TOKEN = """
-            DELETE FROM refresh_tokens WHERE token_hash = ?
-            """;
-
-    private static final String DELETE_ALL_REFRESH_TOKENS_FOR_USER = """
-            DELETE FROM refresh_tokens WHERE user_id = ?
-            """;
-
-    private final JdbcTemplate jdbc;
-
-    public UserRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+    /** Maps token_hash -> RefreshTokenEntry(userId, expiresAt). */
+    private final ConcurrentHashMap<String, RefreshTokenEntry> refreshTokens = new ConcurrentHashMap<>();
 
     /**
      * Finds a user by their unique username.
@@ -70,8 +29,7 @@ public class UserRepository {
      * @return the user entity, or {@link Optional#empty()} if not found
      */
     public Optional<UserEntity> findByUsername(String username) {
-        List<UserEntity> rows = jdbc.query(SELECT_BY_USERNAME, USER_ROW_MAPPER, username);
-        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
+        return Optional.ofNullable(usersByUsername.get(username));
     }
 
     /**
@@ -81,8 +39,7 @@ public class UserRepository {
      * @return the user entity, or {@link Optional#empty()} if not found
      */
     public Optional<UserEntity> findById(String id) {
-        List<UserEntity> rows = jdbc.query(SELECT_BY_ID, USER_ROW_MAPPER, id);
-        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
+        return Optional.ofNullable(usersById.get(id));
     }
 
     /**
@@ -91,14 +48,16 @@ public class UserRepository {
      * @param user the user entity to insert
      */
     public void save(UserEntity user) {
-        Instant createdAt = user.createdAt() != null ? user.createdAt() : Instant.now();
-        jdbc.update(INSERT_USER,
+        UserEntity toStore = new UserEntity(
                 user.id(),
                 user.username(),
                 user.email(),
                 user.role(),
                 user.passwordHash(),
-                Timestamp.from(createdAt));
+                user.createdAt() != null ? user.createdAt() : Instant.now()
+        );
+        usersById.put(toStore.id(), toStore);
+        usersByUsername.put(toStore.username(), toStore);
     }
 
     /**
@@ -110,8 +69,7 @@ public class UserRepository {
      * @param expiresAt expiry timestamp
      */
     public void saveRefreshToken(String id, String userId, String tokenHash, Instant expiresAt) {
-        jdbc.update(INSERT_REFRESH_TOKEN,
-                id, userId, tokenHash, Timestamp.from(expiresAt), Timestamp.from(Instant.now()));
+        refreshTokens.put(tokenHash, new RefreshTokenEntry(userId, expiresAt));
     }
 
     /**
@@ -122,9 +80,11 @@ public class UserRepository {
      *         is not found or has expired
      */
     public Optional<String> findUserIdByRefreshTokenHash(String tokenHash) {
-        List<String> rows = jdbc.query(SELECT_REFRESH_TOKEN,
-                (rs, n) -> rs.getString("user_id"), tokenHash);
-        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
+        RefreshTokenEntry entry = refreshTokens.get(tokenHash);
+        if (entry == null || entry.expiresAt().isBefore(Instant.now())) {
+            return Optional.empty();
+        }
+        return Optional.of(entry.userId());
     }
 
     /**
@@ -133,7 +93,7 @@ public class UserRepository {
      * @param tokenHash SHA-256 hex digest of the raw token to invalidate
      */
     public void deleteRefreshToken(String tokenHash) {
-        jdbc.update(DELETE_REFRESH_TOKEN, tokenHash);
+        refreshTokens.remove(tokenHash);
     }
 
     /**
@@ -142,25 +102,8 @@ public class UserRepository {
      * @param userId the user's UUID
      */
     public void deleteAllRefreshTokensForUser(String userId) {
-        jdbc.update(DELETE_ALL_REFRESH_TOKENS_FOR_USER, userId);
+        refreshTokens.entrySet().removeIf(e -> userId.equals(e.getValue().userId()));
     }
 
-    // -------------------------------------------------------------------------
-    // Row mapper
-    // -------------------------------------------------------------------------
-
-    private static final RowMapper<UserEntity> USER_ROW_MAPPER = new RowMapper<>() {
-        @Override
-        public UserEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Timestamp createdAt = rs.getTimestamp("created_at");
-            return new UserEntity(
-                    rs.getString("id"),
-                    rs.getString("username"),
-                    rs.getString("email"),
-                    rs.getString("role"),
-                    rs.getString("password_hash"),
-                    createdAt != null ? createdAt.toInstant() : null
-            );
-        }
-    };
+    private record RefreshTokenEntry(String userId, Instant expiresAt) {}
 }

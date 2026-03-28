@@ -9,13 +9,23 @@ import com.jmeternext.engine.service.TestRunResult;
 import com.jmeternext.engine.service.UIBridge;
 import com.jmeternext.engine.service.http.HttpClientFactory;
 import com.jmeternext.engine.service.interpreter.NodeInterpreter;
+import com.jmeternext.engine.service.output.CsvMetricsOutput;
+import com.jmeternext.engine.service.output.InfluxDbMetricsOutput;
+import com.jmeternext.engine.service.output.JsonMetricsOutput;
+import com.jmeternext.engine.service.output.MetricsOutputManager;
+import com.jmeternext.engine.service.output.PrometheusMetricsOutput;
 import com.jmeternext.engine.service.plan.JmxParseException;
 import com.jmeternext.engine.service.plan.JmxTreeWalker;
 import com.jmeternext.engine.service.plan.PlanNode;
+import com.jmeternext.engine.service.shape.LoadShape;
+import com.jmeternext.engine.service.shape.LoadShapeController;
+import com.jmeternext.engine.service.shape.ShapeParser;
+import com.jmeternext.engine.service.VirtualUserExecutor;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -58,6 +68,7 @@ import java.util.logging.Logger;
  * <ul>
  *   <li>{@code jmeter.threads} — number of virtual users (default: 1)</li>
  *   <li>{@code jmeter.duration} — run duration in seconds; 0 = run until plan completes (default: 0)</li>
+ *   <li>{@code jmeter.shape} — load shape spec for dynamic VU adjustment (e.g., "ramp:0:100:60s")</li>
  * </ul>
  *
  * <p>Thread-safety: all public methods are thread-safe. Concurrent calls to
@@ -72,6 +83,28 @@ public final class EngineServiceImpl implements EngineService {
 
     /** Property key for overriding the run duration in seconds. */
     public static final String PROP_DURATION = "jmeter.duration";
+
+    /** Property key for configuring active metrics outputs (comma-separated: csv,json,influxdb,prometheus). */
+    public static final String PROP_OUTPUTS = "jmeter.outputs";
+
+    /**
+     * Property key for specifying a load shape that dynamically adjusts VU count.
+     *
+     * <p>Format: {@code "type:params"} — see {@link ShapeParser} for details.
+     * Examples:
+     * <ul>
+     *   <li>{@code "ramp:0:100:60s"} — ramp from 0 to 100 users over 60 seconds</li>
+     *   <li>{@code "stages:0:10:30s,10:50:60s,50:0:30s"} — multi-stage profile</li>
+     *   <li>{@code "constant:50:5m"} — hold 50 users for 5 minutes</li>
+     *   <li>{@code "step:10:15s:100:120s"} — add 10 users every 15s up to 100</li>
+     *   <li>{@code "sine:10:100:30s:120s"} — oscillate between 10-100 users</li>
+     * </ul>
+     *
+     * <p>When set, the shape controller runs alongside the normal execution and
+     * dynamically adjusts the VU count. The {@code jmeter.threads} property sets
+     * the initial VU count but the shape overrides it as the test progresses.
+     */
+    public static final String PROP_SHAPE = "jmeter.shape";
 
     private static final int DEFAULT_THREADS  = 1;
     private static final long DEFAULT_DURATION = 0L;
@@ -245,6 +278,16 @@ public final class EngineServiceImpl implements EngineService {
         var countingConsumer = new CountingConsumer(totalSamples, errorCount);
         broker.subscribe(runId, countingConsumer);
 
+        // Create and start the metrics output pipeline
+        MetricsOutputManager outputManager = createOutputManager(context.getRunProperties());
+        Map<String, String> outputConfig = buildOutputConfig(context.getRunProperties());
+        outputManager.start(runId, outputConfig);
+        broker.subscribe(runId, outputManager);
+
+        // Parse load shape if configured
+        LoadShapeController shapeController = null;
+        String shapeSpec = context.getRunProperties().getProperty(PROP_SHAPE);
+
         try {
             // If treeData carries JMX content, use the NodeInterpreter pipeline.
             // Otherwise, fall back to the legacy TestPlanExecutor (map-based tree).
@@ -263,6 +306,34 @@ public final class EngineServiceImpl implements EngineService {
             }
 
             TestPlanExecutor executor = new TestPlanExecutor(context, broker, httpClientFactory);
+
+            // If a load shape is specified, create and start the shape controller.
+            // The shape controller runs alongside the normal execution, dynamically
+            // adjusting VU count via VirtualUserExecutor.
+            if (shapeSpec != null && !shapeSpec.isBlank()) {
+                try {
+                    LoadShape shape = ShapeParser.parse(shapeSpec);
+                    VirtualUserExecutor vuExecutor = new VirtualUserExecutor(context);
+                    shapeController = new LoadShapeController(shape, vuExecutor, () -> {
+                        // Each shape-managed VU runs a single sampler iteration.
+                        // The LoadShapeController wraps this in a while(!cancelled) loop.
+                        return () -> {
+                            if (!context.isRunning()) return;
+                            executor.executeSingleSample(treeData);
+                        };
+                    });
+                    shapeController.start();
+                    LOG.log(Level.INFO,
+                            "EngineServiceImpl: load shape controller started for run {0} with spec ''{1}''",
+                            new Object[]{runId, shapeSpec});
+                } catch (IllegalArgumentException e) {
+                    LOG.log(Level.WARNING,
+                            "EngineServiceImpl: invalid shape spec ''{0}'' for run {1}: {2} — ignoring shape",
+                            new Object[]{shapeSpec, runId, e.getMessage()});
+                    shapeController = null;
+                }
+            }
+
             executor.execute(treeData);
 
             Instant endedAt = Instant.now();
@@ -300,6 +371,12 @@ public final class EngineServiceImpl implements EngineService {
             LOG.log(Level.SEVERE, "EngineServiceImpl: run " + runId + " failed with exception", ex);
             finishWithError(context, startedAt, totalSamples, errorCount, completion, ex);
         } finally {
+            if (shapeController != null) {
+                shapeController.close();
+                LOG.log(Level.INFO, "EngineServiceImpl: load shape controller stopped for run {0}", runId);
+            }
+            outputManager.stop();
+            broker.unsubscribe(runId, outputManager);
             broker.unsubscribe(runId, countingConsumer);
             TestRunContextRegistry.remove(runId);
         }
@@ -326,6 +403,72 @@ public final class EngineServiceImpl implements EngineService {
                 Duration.between(startedAt, endedAt)
         );
         completion.complete(result);
+    }
+
+    // =========================================================================
+    // Metrics output pipeline
+    // =========================================================================
+
+    /**
+     * Creates a {@link MetricsOutputManager} and registers the outputs specified
+     * in the {@code jmeter.outputs} property.
+     *
+     * <p>The property value is a comma-separated list of output names:
+     * {@code "csv"}, {@code "json"}, {@code "influxdb"}, {@code "prometheus"}.
+     * Unknown names are logged and skipped. If the property is absent or empty,
+     * no outputs are registered (the manager is still returned but acts as a
+     * no-op consumer).
+     *
+     * @param overrides run properties containing {@code jmeter.outputs} and
+     *                  backend-specific keys ({@code csv.file}, {@code influxdb.url}, etc.)
+     * @return a new, unstarted {@link MetricsOutputManager}
+     */
+    private MetricsOutputManager createOutputManager(Properties overrides) {
+        MetricsOutputManager manager = new MetricsOutputManager();
+        String outputsValue = overrides.getProperty(PROP_OUTPUTS, "");
+        if (outputsValue.isBlank()) {
+            return manager;
+        }
+
+        String[] names = outputsValue.split(",");
+        for (String raw : names) {
+            String name = raw.trim().toLowerCase();
+            if (name.isEmpty()) continue;
+            switch (name) {
+                case "csv"        -> manager.addOutput(new CsvMetricsOutput());
+                case "json"       -> manager.addOutput(new JsonMetricsOutput());
+                case "influxdb"   -> manager.addOutput(new InfluxDbMetricsOutput());
+                case "prometheus" -> manager.addOutput(new PrometheusMetricsOutput());
+                default -> LOG.log(Level.WARNING,
+                        "EngineServiceImpl: unknown metrics output ''{0}'' — skipped", name);
+            }
+        }
+
+        LOG.log(Level.INFO, "EngineServiceImpl: configured {0} metrics output(s): {1}",
+                new Object[]{manager.getOutputs().size(), outputsValue.trim()});
+
+        return manager;
+    }
+
+    /**
+     * Builds a flat configuration map for {@link MetricsOutputManager#start} from
+     * the run's {@link Properties}.
+     *
+     * <p>Extracts all output-related keys ({@code csv.*}, {@code json.*},
+     * {@code influxdb.*}, {@code prometheus.*}) into a {@code Map<String, String>}.
+     *
+     * @param overrides the run properties
+     * @return a configuration map for the output backends
+     */
+    private static Map<String, String> buildOutputConfig(Properties overrides) {
+        Map<String, String> config = new HashMap<>();
+        for (String key : overrides.stringPropertyNames()) {
+            if (key.startsWith("csv.") || key.startsWith("json.")
+                    || key.startsWith("influxdb.") || key.startsWith("prometheus.")) {
+                config.put(key, overrides.getProperty(key));
+            }
+        }
+        return config;
     }
 
     // =========================================================================

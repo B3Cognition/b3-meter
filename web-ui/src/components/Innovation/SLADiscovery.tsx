@@ -7,9 +7,54 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { Activity, Play, Square } from 'lucide-react';
-import { startRun } from '../../api/runs.js';
+import { startRun, stopRun } from '../../api/runs.js';
+import { createPlan } from '../../api/plans.js';
 import { useLogStore } from '../../store/logStore.js';
 import './Innovation.css';
+
+/** Build a minimal JMX that hits a single URL with N virtual users for 10 seconds. */
+function buildProbeJmx(targetUrl: string, virtualUsers: number): string {
+  let url: URL;
+  try {
+    url = new URL(targetUrl);
+  } catch {
+    url = new URL('http://localhost' + (targetUrl.startsWith('/') ? '' : '/') + targetUrl);
+  }
+  const domain = url.hostname;
+  const protocol = url.protocol.replace(':', '');
+  const port = url.port || (protocol === 'https' ? '443' : '80');
+  const path = url.pathname;
+  const query = url.search ? url.search.substring(1) : '';
+  const queryEscaped = query.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="3.2" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="SLA Probe" enabled="true"/>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Probe" enabled="true">
+        <intProp name="ThreadGroup.num_threads">${virtualUsers}</intProp>
+        <intProp name="ThreadGroup.ramp_time">2</intProp>
+        <longProp name="ThreadGroup.duration">10</longProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SLA Probe" enabled="true">
+          <stringProp name="HTTPSampler.domain">${domain}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.path">${path}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <stringProp name="HTTPSampler.arguments">${queryEscaped}</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>`;
+}
 
 interface ProbeResult {
   virtualUsers: number;
@@ -34,25 +79,40 @@ export function SLADiscovery() {
   const runProbe = useCallback(
     async (vus: number): Promise<ProbeResult> => {
       setStatusMsg(`Probing with ${vus} VUs...`);
-      addLog('INFO', `SLA Discovery: probing with ${vus} VUs`);
+      addLog('INFO', `SLA Discovery: probing ${targetUrl} with ${vus} VUs`);
 
       try {
-        // Start a run — the backend uses planId to resolve config.
-        // We pass extra fields that the backend can interpret for SLA probes.
+        // 1. Create a plan with a dynamically-generated JMX for the target URL
+        const planName = `sla-probe-${vus}vu-${Date.now()}`;
+        const plan = await createPlan({ name: planName });
+        const planId = plan.id;
+
+        // 2. Upload JMX content with the actual target URL and VU count
+        const jmx = buildProbeJmx(targetUrl, vus);
+        // Upload JMX via raw fetch — updatePlan expects typed tree, but we need raw treeData string
+        await fetch(`/api/v1/plans/${planId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ treeData: jmx }),
+        });
+
+        // 3. Start the run (10 second probe)
         const response = await startRun({
-          planId: `sla-probe-${Date.now()}`,
+          planId,
+          virtualUsers: vus,
+          durationSeconds: 10,
         } as any);
 
         const runId = response.id || response.runId!;
 
-        // Poll for metrics for up to 15s
+        // 4. Poll for metrics until run completes or timeout (20s)
         let p95 = 0;
         let throughput = 0;
         let errorRate = 0;
-        const deadline = Date.now() + 15000;
+        const deadline = Date.now() + 20000;
 
         while (Date.now() < deadline) {
-          await new Promise((r) => setTimeout(r, 1000));
+          await new Promise((r) => setTimeout(r, 1500));
           try {
             const res = await fetch(`/api/v1/runs/${runId}/metrics`);
             if (res.ok) {
@@ -61,54 +121,60 @@ export function SLADiscovery() {
                 p95 = m.percentile95 ?? 0;
                 throughput = m.samplesPerSecond ?? 0;
                 errorRate = m.errorPercent ?? 0;
-                break;
               }
             }
           } catch {
             /* continue polling */
           }
-          // Check run status
+          // Check if run finished
           try {
             const statusRes = await fetch(`/api/v1/runs/${runId}`);
             if (statusRes.ok) {
               const data = await statusRes.json();
               const s = (data.status || '').toUpperCase();
-              if (s === 'STOPPED' || s === 'ERROR' || s === 'COMPLETED') break;
+              if (s === 'STOPPED' || s === 'ERROR' || s === 'COMPLETED') {
+                // Final metrics read
+                try {
+                  const finalRes = await fetch(`/api/v1/runs/${runId}/metrics`);
+                  if (finalRes.ok) {
+                    const fm = await finalRes.json();
+                    if (fm.sampleCount > 0) {
+                      p95 = fm.percentile95 ?? p95;
+                      throughput = fm.samplesPerSecond ?? throughput;
+                      errorRate = fm.errorPercent ?? errorRate;
+                    }
+                  }
+                } catch { /* use last known */ }
+                break;
+              }
             }
           } catch {
             /* ignore */
           }
         }
 
-        // If backend is not available, simulate results for demonstration
-        if (p95 === 0) {
-          // Simulation: p95 grows quadratically with VU count
-          p95 = Math.round(50 + (vus * vus) / 200 + Math.random() * 30);
-          throughput = Math.round(vus * 8.5 - vus * vus * 0.01 + Math.random() * 20);
-          errorRate = vus > maxVUs * 0.7 ? Math.round(Math.random() * 5 + 1) : 0;
-        }
+        // Stop the run if it's still going
+        try { await stopRun(runId); } catch { /* may already be stopped */ }
 
-        const result: ProbeResult = {
+        return {
           virtualUsers: vus,
           p95,
           throughput: Math.max(0, throughput),
           errorRate,
           breached: p95 > slaThreshold,
         };
-        return result;
-      } catch {
-        // Simulation fallback
-        const p95 = Math.round(50 + (vus * vus) / 200 + Math.random() * 30);
+      } catch (err) {
+        addLog('ERROR', `SLA probe failed for ${vus} VUs: ${err}`);
         return {
           virtualUsers: vus,
-          p95,
-          throughput: Math.max(0, Math.round(vus * 8.5 - vus * vus * 0.01)),
-          errorRate: 0,
-          breached: p95 > slaThreshold,
+          p95: 0,
+          throughput: 0,
+          errorRate: 100,
+          breached: false,
         };
       }
     },
-    [slaThreshold, maxVUs, addLog],
+    [targetUrl, slaThreshold, addLog],
   );
 
   const handleStart = useCallback(async () => {

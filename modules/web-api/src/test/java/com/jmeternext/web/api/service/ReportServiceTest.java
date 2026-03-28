@@ -1,10 +1,10 @@
 package com.jmeternext.web.api.service;
 
-import com.jmeternext.web.api.controller.dto.CreatePlanRequest;
-import com.jmeternext.web.api.controller.dto.TestPlanDto;
-import com.jmeternext.web.api.repository.JdbcSampleResultRepository;
 import com.jmeternext.web.api.repository.SampleBucketRow;
 import com.jmeternext.web.api.repository.SampleResultRepository;
+import com.jmeternext.web.api.repository.TestPlanEntity;
+import com.jmeternext.web.api.repository.TestPlanRepository;
+import com.jmeternext.web.api.repository.TestRunEntity;
 import com.jmeternext.web.api.repository.TestRunRepository;
 import com.jmeternext.web.api.service.ReportService.ReportStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
@@ -33,16 +32,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests for {@link ReportService}.
  *
- * <p>Boots the full Spring context with an in-memory H2 database. Each test
- * redirects report output to a JUnit {@link TempDir} via reflection on the
- * {@link ReportService#REPORTS_BASE} path so tests do not pollute the working
- * directory or the {@code data/reports} folder.
- *
- * <p>Tests verify:
+ * <p>Boots the full Spring context with in-memory repositories. Tests verify:
  * <ul>
  *   <li>Report HTML is generated and written to disk</li>
  *   <li>Report HTML contains summary statistics</li>
- *   <li>Status transitions (NOT_FOUND → READY)</li>
+ *   <li>Status transitions (NOT_FOUND -> READY)</li>
  *   <li>Missing run throws {@link IllegalArgumentException}</li>
  *   <li>Empty sample data produces a valid (zero-stat) report</li>
  * </ul>
@@ -64,7 +58,7 @@ class ReportServiceTest {
     TestRunRepository runRepository;
 
     @Autowired
-    JdbcTemplate jdbc;
+    TestPlanRepository planRepository;
 
     @Autowired
     TestRestTemplate restTemplate;
@@ -77,15 +71,15 @@ class ReportServiceTest {
         planId = UUID.randomUUID().toString();
         runId  = UUID.randomUUID().toString();
 
-        jdbc.update("INSERT INTO test_plans (id, name, tree_data) VALUES (?, ?, ?)", planId, "Report Test Plan", "{}");
-        jdbc.update("INSERT INTO test_runs (id, plan_id, status) VALUES (?, ?, ?)", runId, planId, "STOPPED");
+        planRepository.save(new TestPlanEntity(planId, "Report Test Plan", "default", "{}", Instant.now(), Instant.now(), null));
+        runRepository.create(new TestRunEntity(runId, planId, "STOPPED", Instant.now(), null, 0L, 0L, "default"));
 
         // Redirect report output to the temp directory for this test run.
         redirectReportBase(tempDir.toString());
     }
 
     // -------------------------------------------------------------------------
-    // generateReport — basic HTML generation
+    // generateReport -- basic HTML generation
     // -------------------------------------------------------------------------
 
     @Test
@@ -146,7 +140,7 @@ class ReportServiceTest {
 
     @Test
     void generateReport_noSamples_producesValidHtml() throws IOException {
-        // No sample rows inserted — should still produce a valid report with zero stats.
+        // No sample rows inserted -- should still produce a valid report with zero stats.
         Path reportDir = reportService.generateReport(runId);
         String html = Files.readString(reportDir.resolve("index.html"));
 
@@ -198,7 +192,7 @@ class ReportServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Controller integration — POST /api/v1/runs/{runId}/report
+    // Controller integration -- POST /api/v1/runs/{runId}/report
     // -------------------------------------------------------------------------
 
     @Test
@@ -210,7 +204,7 @@ class ReportServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // Controller integration — GET /api/v1/runs/{runId}/report
+    // Controller integration -- GET /api/v1/runs/{runId}/report
     // -------------------------------------------------------------------------
 
     @Test
@@ -284,33 +278,15 @@ class ReportServiceTest {
 
     /**
      * Redirects the {@link ReportService} output base directory to the given path.
-     *
-     * <p>The service uses {@code Path.of(REPORTS_BASE, runId)} where
-     * {@code REPORTS_BASE} is a {@code static final String}. Since the service
-     * is a Spring bean we cannot swap the constant post-construction normally.
-     * Instead we use a package-accessible constant and build the path via
-     * {@link Path#resolve(Path)} — so the simplest approach is to use the
-     * temp directory as the working-directory prefix by changing the field
-     * on the singleton bean via reflection.
-     *
-     * <p>In practice this replaces the constant for the duration of the test
-     * and is restored per {@link DirtiesContext}.
      */
     private void redirectReportBase(String newBase) {
         try {
             Field field = ReportService.class.getDeclaredField("REPORTS_BASE");
-            // REPORTS_BASE is static final — we must make it accessible and use
-            // Unsafe tricks. Instead, we write reports to tempDir sub-path by
-            // injecting a custom path via a helper. Since we cannot modify a static
-            // final field portably, we rely on the fact that H2 in-memory DB isolates
-            // data and use an actual sub-path under tempDir by pre-creating it and
-            // using symlinks — or simply accept that the test writes to
+            // REPORTS_BASE is static final -- we accept that the test writes to
             // data/reports/<runId> under the build dir, which is acceptable for CI.
-            //
-            // We leave the field as-is and instead verify file creation directly
-            // using the path returned by generateReport().
+            // We verify file creation directly using the path returned by generateReport().
         } catch (NoSuchFieldException ignored) {
-            // Field lookup failed — test proceeds without redirection.
+            // Field lookup failed -- test proceeds without redirection.
         }
     }
 }

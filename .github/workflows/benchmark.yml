@@ -10,7 +10,7 @@ on:
 
 jobs:
   benchmark:
-    runs-on: [self-hosted, benchmark]
+    runs-on: ubuntu-latest
     timeout-minutes: 120
 
     steps:

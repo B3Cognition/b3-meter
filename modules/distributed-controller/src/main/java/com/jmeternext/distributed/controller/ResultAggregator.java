@@ -1,6 +1,8 @@
 package com.jmeternext.distributed.controller;
 
+import com.google.protobuf.ByteString;
 import com.jmeternext.engine.adapter.InMemorySampleStreamBroker;
+import com.jmeternext.engine.service.HdrHistogramAccumulator;
 import com.jmeternext.engine.service.SampleBucket;
 import com.jmeternext.engine.service.SampleStreamBroker;
 import com.jmeternext.worker.proto.SampleResultBatch;
@@ -48,6 +50,14 @@ public final class ResultAggregator {
 
     /** Active worker subscriptions per runId (for lifecycle tracking). */
     private final ConcurrentHashMap<String, List<String>> activeWorkers = new ConcurrentHashMap<>();
+
+    /**
+     * Per-run, per-label merged histograms for accurate percentile computation.
+     * Outer key = runId, inner key = samplerLabel.
+     * Synchronized via ConcurrentHashMap + HdrHistogramAccumulator's internal synchronization.
+     */
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, HdrHistogramAccumulator>>
+            mergedHistograms = new ConcurrentHashMap<>();
 
     /**
      * Creates a {@link ResultAggregator} that publishes merged buckets to the given broker.
@@ -142,6 +152,7 @@ public final class ResultAggregator {
         sampleTotals.remove(runId);
         errorTotals.remove(runId);
         activeWorkers.remove(runId);
+        mergedHistograms.remove(runId);
     }
 
     // -------------------------------------------------------------------------
@@ -162,29 +173,65 @@ public final class ResultAggregator {
                         batch.getTimestamp().getNanos())
                 : Instant.now();
 
-        // Extract percentiles with safe fallbacks
-        Map<String, Double> pct = batch.getPercentilesMap();
-        double p90 = pct.getOrDefault("p90", 0.0);
-        double p95 = pct.getOrDefault("p95", 0.0);
-        double p99 = pct.getOrDefault("p99", 0.0);
-
+        String label = batch.getSamplerLabel();
         double avg = batch.getAvgResponseTime();
 
-        // Build a SampleBucket; avgResponseTime is used for all response-time fields
-        // where the proto batch doesn't carry min/max separately.
-        SampleBucket bucket = new SampleBucket(
-                timestamp,
-                batch.getSamplerLabel(),
-                batch.getSampleCount(),
-                batch.getErrorCount(),
-                avg,
-                /* minResponseTime */ avg,
-                /* maxResponseTime */ Math.max(avg, p99),
-                p90,
-                p95,
-                p99,
-                /* samplesPerSecond */ batch.getSampleCount()
-        );
+        // Check for histogram data (new protocol) vs legacy percentiles
+        ByteString histData = batch.getHdrHistogram();
+        SampleBucket bucket;
+
+        if (histData != null && !histData.isEmpty()) {
+            // Merge the worker's histogram into the per-run, per-label accumulator
+            HdrHistogramAccumulator workerHist =
+                    HdrHistogramAccumulator.fromBytes(histData.toByteArray());
+
+            ConcurrentHashMap<String, HdrHistogramAccumulator> labelMap =
+                    mergedHistograms.computeIfAbsent(runId, k -> new ConcurrentHashMap<>());
+            HdrHistogramAccumulator merged =
+                    labelMap.computeIfAbsent(label, k -> new HdrHistogramAccumulator());
+            merged.merge(workerHist);
+
+            // Compute accurate percentiles from the merged histogram
+            double p90 = merged.getPercentile(90.0);
+            double p95 = merged.getPercentile(95.0);
+            double p99 = merged.getPercentile(99.0);
+            double min = workerHist.getMin();
+            double max = workerHist.getMax();
+
+            bucket = new SampleBucket(
+                    timestamp,
+                    label,
+                    batch.getSampleCount(),
+                    batch.getErrorCount(),
+                    avg,
+                    min,
+                    max,
+                    p90,
+                    p95,
+                    p99,
+                    /* samplesPerSecond */ batch.getSampleCount()
+            );
+        } else {
+            // Legacy fallback: use pre-computed percentiles from the proto
+            Map<String, Double> pct = batch.getPercentilesMap();
+            double p90 = pct.getOrDefault("p90", 0.0);
+            double p95 = pct.getOrDefault("p95", 0.0);
+            double p99 = pct.getOrDefault("p99", 0.0);
+
+            bucket = new SampleBucket(
+                    timestamp,
+                    label,
+                    batch.getSampleCount(),
+                    batch.getErrorCount(),
+                    avg,
+                    /* minResponseTime */ avg,
+                    /* maxResponseTime */ Math.max(avg, p99),
+                    p90,
+                    p95,
+                    p99,
+                    /* samplesPerSecond */ batch.getSampleCount()
+            );
+        }
 
         try {
             broker.publish(runId, bucket);

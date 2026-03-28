@@ -69,6 +69,11 @@ public class TestRunService {
      */
     private final ConcurrentHashMap<String, SampleBucketConsumer> consumers = new ConcurrentHashMap<>();
 
+    /**
+     * SLA evaluators keyed by runId — created when SLA thresholds are provided in the start request.
+     */
+    private final ConcurrentHashMap<String, com.jmeternext.engine.service.SlaEvaluator> slaEvaluators = new ConcurrentHashMap<>();
+
     public TestRunService(TestRunRepository runRepository,
                           TestPlanRepository testPlanRepository,
                           SampleStreamBroker broker,
@@ -166,6 +171,21 @@ public class TestRunService {
         };
         consumers.put(runId, consumer);
         broker.subscribe(runId, consumer);
+
+        // Subscribe SLA evaluator if thresholds are provided
+        if (request.slaP95Ms() != null || request.slaP99Ms() != null
+                || request.slaAvgMs() != null || request.slaMaxErrorPercent() != null) {
+            var sla = new com.jmeternext.engine.service.SlaEvaluator(
+                    request.slaP95Ms() != null ? request.slaP95Ms() : 0,
+                    request.slaP99Ms() != null ? request.slaP99Ms() : 0,
+                    request.slaAvgMs() != null ? request.slaAvgMs() : 0,
+                    request.slaMaxErrorPercent() != null ? request.slaMaxErrorPercent() : -1
+            );
+            slaEvaluators.put(runId, sla);
+            broker.subscribe(runId, sla);
+            LOG.log(Level.INFO, "SLA evaluator active for run {0}: p95<{1}ms p99<{2}ms avg<{3}ms err<{4}%",
+                    new Object[]{runId, request.slaP95Ms(), request.slaP99Ms(), request.slaAvgMs(), request.slaMaxErrorPercent()});
+        }
 
         // Persist initial RUNNING state.
         TestRunEntity entity = new TestRunEntity(
@@ -278,6 +298,16 @@ public class TestRunService {
             return Optional.of(MetricsDto.empty(runId));
         }
         return Optional.of(toMetricsDto(runId, latest));
+    }
+
+    // -------------------------------------------------------------------------
+    // SLA
+    // -------------------------------------------------------------------------
+
+    public Optional<com.jmeternext.engine.service.SlaEvaluator.SlaStatus> getSlaStatus(String runId) {
+        var evaluator = slaEvaluators.get(runId);
+        if (evaluator == null) return Optional.empty();
+        return Optional.of(evaluator.getStatus());
     }
 
     // -------------------------------------------------------------------------

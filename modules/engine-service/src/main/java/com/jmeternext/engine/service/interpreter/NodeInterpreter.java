@@ -256,6 +256,11 @@ public final class NodeInterpreter {
      * @return list of all {@link SampleResult}s produced
      */
     List<SampleResult> executeChildren(List<PlanNode> children, Map<String, String> variables) {
+        return executeChildren(children, variables, null);
+    }
+
+    List<SampleResult> executeChildren(List<PlanNode> children, Map<String, String> variables,
+                                        String runId) {
         List<SampleResult> results = new ArrayList<>();
         SampleResult lastResult = null;
 
@@ -266,6 +271,25 @@ public final class NodeInterpreter {
             results.addAll(produced);
             if (!produced.isEmpty()) {
                 lastResult = produced.get(produced.size() - 1);
+                // Publish each sample immediately for real-time metrics
+                if (runId != null) {
+                    for (SampleResult sr : produced) {
+                        SampleBucket bucket = new SampleBucket(
+                                Instant.now(),
+                                sr.getLabel(),
+                                1,
+                                sr.isSuccess() ? 0 : 1,
+                                sr.getTotalTimeMs(),
+                                sr.getTotalTimeMs(),
+                                sr.getTotalTimeMs(),
+                                sr.getTotalTimeMs(),
+                                sr.getTotalTimeMs(),
+                                sr.getTotalTimeMs(),
+                                1
+                        );
+                        broker.publish(runId, bucket);
+                    }
+                }
             }
         }
         return results;
@@ -298,7 +322,7 @@ public final class NodeInterpreter {
                     try {
                         long durationMs = context.getDurationSeconds() > 0
                                 ? context.getDurationSeconds() * 1000L : 0;
-                        List<SampleResult> vuResults = runVirtualUser(tg, loops, durationMs);
+                        List<SampleResult> vuResults = runVirtualUser(tg, loops, durationMs, context.getRunId());
                         collector.addAll(vuResults);
                     } finally {
                         latch.countDown();
@@ -320,6 +344,10 @@ public final class NodeInterpreter {
     }
 
     private List<SampleResult> runVirtualUser(PlanNode tg, int loops, long durationMs) {
+        return runVirtualUser(tg, loops, durationMs, null);
+    }
+
+    private List<SampleResult> runVirtualUser(PlanNode tg, int loops, long durationMs, String runId) {
         List<SampleResult> results = new ArrayList<>();
         Map<String, String> variables = new HashMap<>();
         long startTime = System.currentTimeMillis();
@@ -328,7 +356,7 @@ public final class NodeInterpreter {
             if (Thread.currentThread().isInterrupted()) break;
             // Duration-based stop: if durationSeconds is set, stop after elapsed time
             if (durationMs > 0 && (System.currentTimeMillis() - startTime) >= durationMs) break;
-            List<SampleResult> iterResults = executeChildren(tg.getChildren(), variables);
+            List<SampleResult> iterResults = executeChildren(tg.getChildren(), variables, runId);
             results.addAll(iterResults);
         }
         return results;

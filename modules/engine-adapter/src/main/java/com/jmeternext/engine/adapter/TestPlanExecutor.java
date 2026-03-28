@@ -122,6 +122,24 @@ public final class TestPlanExecutor {
     }
 
     /**
+     * Executes a single sampler call using the first thread group configuration
+     * from the given tree data.
+     *
+     * <p>This method is intended to be called by the {@link com.jmeternext.engine.service.shape.LoadShapeController}
+     * for each shape-managed virtual user iteration. It runs one sampler call,
+     * records the result, and publishes it to the broker.
+     *
+     * @param treeData plan element tree; may be {@code null} or empty (defaults apply)
+     */
+    public void executeSingleSample(Map<String, Object> treeData) {
+        List<ThreadGroupConfig> threadGroups = extractThreadGroups(treeData);
+        ThreadGroupConfig tg = threadGroups.isEmpty() ? defaultThreadGroup() : threadGroups.getFirst();
+        SimulatedSampler.SampleResult result = executeSample(tg);
+        rawResults.add(result);
+        context.getUiBridge().onSampleReceived(context, result.label(), result.totalTimeMs(), result.success());
+    }
+
+    /**
      * Returns the total number of raw sample results collected so far.
      * Useful for assertions in tests without subscribing to the broker.
      */

@@ -138,8 +138,17 @@ message SampleResultBatch {
     /**
      * Latency percentile values (milliseconds), keyed by percentile label.
      * Conventional keys: "p50", "p90", "p95", "p99".
+     * Retained for backward compatibility; ignored when hdr_histogram is present.
      */
     map<string, double> percentiles = 6;
+
+    /**
+     * Serialized HdrHistogramAccumulator (sparse RLE format).
+     * When present (non-empty), the controller uses this to merge histograms
+     * across workers and compute accurate percentiles from the merged data.
+     * When absent or empty, the controller falls back to the percentiles map.
+     */
+    bytes hdr_histogram = 7;
 }
 
 // ---------------------------------------------------------------------------

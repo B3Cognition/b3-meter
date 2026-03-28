@@ -41,17 +41,12 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     implementation("ch.qos.logback.contrib:logback-json-classic:0.1.5")
     implementation("ch.qos.logback.contrib:logback-jackson:0.1.5")
-    implementation(libs.spring.boot.starter.jdbc)
-    implementation(libs.flyway.core)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
-    runtimeOnly(libs.h2)
-    runtimeOnly("org.postgresql:postgresql:42.7.3")
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(platform(rootProject.libs.junit.bom))
-    testRuntimeOnly(libs.h2)
 }
 
 description = "Web-api: Spring Boot REST + SSE backend"

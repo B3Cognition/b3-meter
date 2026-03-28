@@ -28,7 +28,9 @@ import java.util.Objects;
  * @param percentile90      90th-percentile response time in ms; must be &gt;= 0
  * @param percentile95      95th-percentile response time in ms; must be &gt;= 0
  * @param percentile99      99th-percentile response time in ms; must be &gt;= 0
- * @param samplesPerSecond  throughput in this window (same as {@code sampleCount} for 1-s buckets)
+ * @param samplesPerSecond    throughput in this window (same as {@code sampleCount} for 1-s buckets)
+ * @param hdrHistogramBytes   serialized {@link HdrHistogramAccumulator} for distributed merge;
+ *                            may be {@code null} when histogram data is not available
  */
 public record SampleBucket(
         Instant timestamp,
@@ -41,8 +43,30 @@ public record SampleBucket(
         double percentile90,
         double percentile95,
         double percentile99,
-        double samplesPerSecond
+        double samplesPerSecond,
+        byte[] hdrHistogramBytes
 ) {
+
+    /**
+     * Backward-compatible constructor without histogram data.
+     * Delegates to the canonical constructor with {@code null} histogram bytes.
+     */
+    public SampleBucket(
+            Instant timestamp,
+            String samplerLabel,
+            long sampleCount,
+            long errorCount,
+            double avgResponseTime,
+            double minResponseTime,
+            double maxResponseTime,
+            double percentile90,
+            double percentile95,
+            double percentile99,
+            double samplesPerSecond) {
+        this(timestamp, samplerLabel, sampleCount, errorCount, avgResponseTime,
+                minResponseTime, maxResponseTime, percentile90, percentile95, percentile99,
+                samplesPerSecond, null);
+    }
 
     /**
      * Compact canonical constructor — validates all fields.

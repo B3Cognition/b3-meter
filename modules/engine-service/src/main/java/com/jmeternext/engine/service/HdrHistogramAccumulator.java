@@ -1,12 +1,14 @@
 package com.jmeternext.engine.service;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread-safe HDR Histogram accumulator for accurate percentile computation.
  *
  * <p>Uses a simple array-based histogram with 1ms buckets covering the range
- * 0–60,000ms (60 seconds). This avoids external dependencies while providing
+ * 0–120,000ms (120 seconds). This avoids external dependencies while providing
  * mergeable, accurate percentile computation suitable for distributed
  * aggregation across controller/worker nodes.
  *
@@ -35,14 +37,14 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class HdrHistogramAccumulator {
 
-    /** Maximum recordable value in milliseconds (60 seconds). */
-    public static final int MAX_VALUE_MS = 60_000;
+    /** Maximum recordable value in milliseconds (120 seconds). */
+    public static final int MAX_VALUE_MS = 120_000;
 
-    private final long[] counts;  // 1ms buckets, 0–60000ms range
+    private final long[] counts;  // 1ms buckets, 0–120000ms range
     private final AtomicLong totalCount = new AtomicLong();
 
     /**
-     * Constructs an empty histogram with buckets for 0–60,000ms.
+     * Constructs an empty histogram with buckets for 0–120,000ms.
      */
     public HdrHistogramAccumulator() {
         this.counts = new long[MAX_VALUE_MS + 1]; // 0–60000 inclusive
@@ -177,6 +179,83 @@ public class HdrHistogramAccumulator {
         totalCount.set(0);
     }
 
+    // -------------------------------------------------------------------------
+    // Serialization for distributed histogram merge
+    // -------------------------------------------------------------------------
+
+    /**
+     * Serializes this histogram to a compact byte array using sparse run-length encoding.
+     *
+     * <p>Format (big-endian):
+     * <pre>
+     *   [4 bytes] totalCount (int, clamped from long)
+     *   [repeating for each non-zero bucket]:
+     *     [4 bytes] bucketIndex (int, 0–120000)
+     *     [4 bytes] count (int, clamped from long)
+     * </pre>
+     *
+     * <p>Only non-zero buckets are serialized, making this very compact for typical
+     * distributions which have fewer than 100 non-zero buckets out of 120,001.
+     *
+     * @return the serialized byte array; never {@code null}
+     */
+    public synchronized byte[] toBytes() {
+        // Count non-zero buckets for precise allocation
+        int nonZero = 0;
+        for (long count : counts) {
+            if (count > 0) nonZero++;
+        }
+
+        // 4 bytes header (totalCount) + 8 bytes per non-zero bucket (4 index + 4 count)
+        ByteBuffer buf = ByteBuffer.allocate(4 + nonZero * 8);
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.putInt((int) Math.min(totalCount.get(), Integer.MAX_VALUE));
+
+        for (int i = 0; i < counts.length; i++) {
+            if (counts[i] > 0) {
+                buf.putInt(i);
+                buf.putInt((int) Math.min(counts[i], Integer.MAX_VALUE));
+            }
+        }
+
+        return buf.array();
+    }
+
+    /**
+     * Deserializes a histogram from a byte array produced by {@link #toBytes()}.
+     *
+     * @param data the serialized byte array; must not be {@code null}
+     * @return a new {@link HdrHistogramAccumulator} populated with the deserialized data
+     * @throws NullPointerException     if {@code data} is {@code null}
+     * @throws IllegalArgumentException if {@code data} is too short or malformed
+     */
+    public static HdrHistogramAccumulator fromBytes(byte[] data) {
+        if (data == null) {
+            throw new NullPointerException("data must not be null");
+        }
+        if (data.length < 4) {
+            throw new IllegalArgumentException(
+                    "data too short: expected at least 4 bytes, got " + data.length);
+        }
+
+        ByteBuffer buf = ByteBuffer.wrap(data);
+        buf.order(ByteOrder.BIG_ENDIAN);
+
+        int totalCount = buf.getInt();
+        HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
+
+        while (buf.remaining() >= 8) {
+            int bucketIndex = buf.getInt();
+            int count = buf.getInt();
+            if (bucketIndex >= 0 && bucketIndex < hist.counts.length && count > 0) {
+                hist.counts[bucketIndex] = count;
+            }
+        }
+
+        hist.totalCount.set(totalCount);
+        return hist;
+    }
+
     /**
      * Creates a {@link SampleBucket} from this histogram's data.
      *
@@ -201,7 +280,8 @@ public class HdrHistogramAccumulator {
                 getPercentile(90.0),
                 getPercentile(95.0),
                 getPercentile(99.0),
-                total // samplesPerSecond = total for 1s buckets
+                total, // samplesPerSecond = total for 1s buckets
+                toBytes() // serialize histogram for distributed merge
         );
     }
 }

@@ -48,7 +48,7 @@ worker:
     targetCPUUtilizationPercentage: 70
 
 persistence:
-  enabled: true
+  enabled: false
   storageClass: ""
   size: 1Gi
 

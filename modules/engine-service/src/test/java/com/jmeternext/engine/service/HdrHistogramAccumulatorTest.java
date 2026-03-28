@@ -111,10 +111,10 @@ class HdrHistogramAccumulatorTest {
     @Test
     void valuesAboveMaxClamped() {
         HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
-        hist.recordValue(100_000); // exceeds MAX_VALUE_MS (60000)
+        hist.recordValue(200_000); // exceeds MAX_VALUE_MS (120000)
         assertEquals(1, hist.getTotalCount());
-        assertEquals(60000, hist.getPercentile(100));
-        assertEquals(60000, hist.getMax());
+        assertEquals(120000, hist.getPercentile(100));
+        assertEquals(120000, hist.getMax());
     }
 
     @Test
@@ -348,5 +348,110 @@ class HdrHistogramAccumulatorTest {
         pool.shutdown();
 
         assertEquals((long) threads * recordsPerThread, hist.getTotalCount());
+    }
+
+    // =========================================================================
+    // Serialization (toBytes / fromBytes)
+    // =========================================================================
+
+    @Test
+    void toBytesFromBytesRoundTrip() {
+        HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
+        hist.recordValue(10);
+        hist.recordValue(20);
+        hist.recordValue(20); // duplicate
+        hist.recordValue(500);
+        hist.recordValue(1000);
+
+        byte[] bytes = hist.toBytes();
+        HdrHistogramAccumulator restored = HdrHistogramAccumulator.fromBytes(bytes);
+
+        assertEquals(hist.getTotalCount(), restored.getTotalCount());
+        assertEquals(hist.getMin(), restored.getMin());
+        assertEquals(hist.getMax(), restored.getMax());
+        assertEquals(hist.getPercentile(50), restored.getPercentile(50));
+        assertEquals(hist.getPercentile(90), restored.getPercentile(90));
+        assertEquals(hist.getPercentile(95), restored.getPercentile(95));
+        assertEquals(hist.getPercentile(99), restored.getPercentile(99));
+    }
+
+    @Test
+    void toBytesEmptyHistogramRoundTrips() {
+        HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
+        byte[] bytes = hist.toBytes();
+
+        // Header only: 4 bytes for totalCount=0, no bucket entries
+        assertEquals(4, bytes.length);
+
+        HdrHistogramAccumulator restored = HdrHistogramAccumulator.fromBytes(bytes);
+        assertEquals(0, restored.getTotalCount());
+        assertEquals(0, restored.getPercentile(50));
+    }
+
+    @Test
+    void toBytesIsSparse() {
+        HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
+        // Record only 3 distinct values
+        hist.recordValue(100);
+        hist.recordValue(200);
+        hist.recordValue(300);
+
+        byte[] bytes = hist.toBytes();
+        // 4 bytes header + 3 non-zero buckets * 8 bytes each = 28 bytes
+        assertEquals(4 + 3 * 8, bytes.length);
+    }
+
+    @Test
+    void fromBytesNullThrows() {
+        assertThrows(NullPointerException.class,
+                () -> HdrHistogramAccumulator.fromBytes(null));
+    }
+
+    @Test
+    void fromBytesTooShortThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> HdrHistogramAccumulator.fromBytes(new byte[]{1, 2}));
+    }
+
+    @Test
+    void serializedHistogramMergesCorrectly() {
+        // Simulate two workers: serialize each, deserialize, merge on controller
+        HdrHistogramAccumulator worker1 = new HdrHistogramAccumulator();
+        HdrHistogramAccumulator worker2 = new HdrHistogramAccumulator();
+
+        for (int i = 1; i <= 50; i++) worker1.recordValue(i);
+        for (int i = 51; i <= 100; i++) worker2.recordValue(i);
+
+        byte[] bytes1 = worker1.toBytes();
+        byte[] bytes2 = worker2.toBytes();
+
+        // Controller deserializes and merges
+        HdrHistogramAccumulator merged = HdrHistogramAccumulator.fromBytes(bytes1);
+        merged.merge(HdrHistogramAccumulator.fromBytes(bytes2));
+
+        assertEquals(100, merged.getTotalCount());
+        assertEquals(1, merged.getMin());
+        assertEquals(100, merged.getMax());
+        assertEquals(50, merged.getPercentile(50));
+        assertEquals(95, merged.getPercentile(95));
+        assertEquals(99, merged.getPercentile(99));
+    }
+
+    @Test
+    void toBucketIncludesHistogramBytes() {
+        HdrHistogramAccumulator hist = new HdrHistogramAccumulator();
+        hist.recordValue(42);
+        hist.recordValue(100);
+
+        SampleBucket bucket = hist.toBucket(Instant.now(), "test", 0);
+        assertNotNull(bucket.hdrHistogramBytes());
+        assertTrue(bucket.hdrHistogramBytes().length > 4);
+
+        // Verify the bytes can be deserialized back
+        HdrHistogramAccumulator restored =
+                HdrHistogramAccumulator.fromBytes(bucket.hdrHistogramBytes());
+        assertEquals(2, restored.getTotalCount());
+        assertEquals(42, restored.getMin());
+        assertEquals(100, restored.getMax());
     }
 }

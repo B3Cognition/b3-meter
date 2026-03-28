@@ -81,30 +81,6 @@ java -jar jmeter-next.jar controller --port 8080
 java -jar jmeter-next.jar worker --controller http://controller:8080
 ```
 
-## 7. Database Backup and Restore
-
-```bash
-# Create a timestamped backup:
-./scripts/db-backup.sh
-
-# Restore from a backup:
-./scripts/db-restore.sh backups/jmeter-next-20260326-120000.mv.db
-
-# PostgreSQL mode:
-DB_TYPE=postgres ./scripts/db-backup.sh
-DB_TYPE=postgres ./scripts/db-restore.sh backups/jmeter-next-20260326-120000.sql
-```
-
-## 8. Deploy to AWS
-
-```bash
-cd deploy/terraform/aws
-terraform init && terraform apply
-```
-
-This provisions an EC2 controller, an auto-scaling worker group, an RDS
-PostgreSQL database, and an ALB with TLS termination.
-
 ## Next Steps
 
 - Read the [API Reference](api-reference.md) for programmatic access.

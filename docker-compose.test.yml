@@ -44,6 +44,11 @@ services:
     build: ./test-servers/mqtt-mock
     ports:
       - "1883:1883"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1884/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   grpc-mock:
     build: ./test-servers/grpc-mock
@@ -81,6 +86,8 @@ services:
       hls-mock:
         condition: service_healthy
       grpc-mock:
+        condition: service_healthy
+      mqtt-mock:
         condition: service_healthy
       dash-mock:
         condition: service_healthy

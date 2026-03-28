@@ -4,13 +4,12 @@
 
 | Profile | Purpose | Activation |
 |---------|---------|------------|
-| `default` | Local development with H2 file database and human-readable console logging | Active when no profile is specified |
-| `postgres` | PostgreSQL database (replaces H2) | `SPRING_PROFILES_ACTIVE=postgres` |
+| `default` | Local development with human-readable console logging | Active when no profile is specified |
 | `kubernetes` | Kubernetes deployment: enables JSON logging, K8s health probes | `SPRING_PROFILES_ACTIVE=kubernetes` |
 | `production` | Production hardening: TLS, quotas, JSON logging | `SPRING_PROFILES_ACTIVE=production` |
 | `json-logging` | Structured JSON log output (standalone, without full production config) | `SPRING_PROFILES_ACTIVE=json-logging` |
 
-Profiles can be combined: `SPRING_PROFILES_ACTIVE=postgres,production`
+Profiles can be combined: `SPRING_PROFILES_ACTIVE=production,kubernetes`
 
 ## Environment Variables
 
@@ -18,9 +17,6 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=postgres,production`
 |----------|---------|-------------|
 | `SERVER_PORT` | `8080` | HTTP listen port |
 | `SPRING_PROFILES_ACTIVE` | `default` | Comma-separated list of active profiles |
-| `DATABASE_URL` | `jdbc:h2:file:./data/jmeter-next` | JDBC connection URL (used by `postgres` profile) |
-| `DATABASE_USER` | `sa` (H2) / `jmeter` (postgres) | Database username |
-| `DATABASE_PASSWORD` | *(empty)* (H2) / `jmeter` (postgres) | Database password |
 | `JMETER_JWT_SECRET` | auto-generated | JWT signing key for API authentication |
 | `WORKER_SERVICE_DNS` | *(none)* | DNS name for discovering distributed workers (K8s) |
 | `WORKER_GRPC_PORT` | `9090` | gRPC port for worker communication |
@@ -44,15 +40,6 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=postgres,production`
 | `spring.servlet.multipart.max-request-size` | `50MB` | Max total request size |
 | `spring.lifecycle.timeout-per-shutdown-phase` | `30s` | Max time to wait for in-flight requests during graceful shutdown |
 
-### Database
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `spring.datasource.url` | `jdbc:h2:file:./data/jmeter-next;AUTO_SERVER=TRUE` | JDBC URL |
-| `spring.datasource.driver-class-name` | `org.h2.Driver` | JDBC driver class |
-| `spring.flyway.enabled` | `true` | Enables Flyway schema migrations |
-| `spring.flyway.locations` | `classpath:db/migration` | Migration script locations |
-
 ### Management / Actuator
 
 | Property | Default | Description |
@@ -68,7 +55,6 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=postgres,production`
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `jmeter.db.mode` | `sqlite` | Database mode selector |
 | `jmeter.auth.multi-user` | `false` (`true` in production) | Enables multi-user authentication |
 | `jmeter.quota.max-concurrent-runs` | *(unlimited)* (`3` in production) | Max concurrent test runs per user |
 | `jmeter.quota.max-virtual-users` | *(unlimited)* (`10000` in production) | Max virtual users per run |

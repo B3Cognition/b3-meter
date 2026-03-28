@@ -233,6 +233,8 @@ class WorkerServiceImplTest {
         StopAck ack = blockingStub.stopNow(StopMessage.newBuilder().setRunId(runId).build());
 
         assertThat(ack.getAccepted()).isTrue();
+        // Allow engine time to process stop — virtual threads may take a moment to interrupt
+        Thread.sleep(500);
         waitForState(WorkerState.IDLE, 10_000L);
         assertThat(service.currentState()).isEqualTo(WorkerState.IDLE);
     }

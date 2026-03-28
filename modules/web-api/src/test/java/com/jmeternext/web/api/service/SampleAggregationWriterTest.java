@@ -2,15 +2,16 @@ package com.jmeternext.web.api.service;
 
 import com.jmeternext.engine.service.SampleBucket;
 import com.jmeternext.engine.service.SampleStreamBroker;
-import com.jmeternext.web.api.repository.JdbcSampleResultRepository;
 import com.jmeternext.web.api.repository.SampleBucketRow;
 import com.jmeternext.web.api.repository.SampleResultRepository;
+import com.jmeternext.web.api.repository.TestPlanEntity;
+import com.jmeternext.web.api.repository.TestPlanRepository;
+import com.jmeternext.web.api.repository.TestRunEntity;
 import com.jmeternext.web.api.repository.TestRunRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.Instant;
@@ -24,12 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests for {@link SampleAggregationWriter}.
  *
- * <p>Boots the full Spring context with an in-memory H2 database. Tests verify:
+ * <p>Boots the full Spring context with in-memory repositories. Tests verify:
  * <ul>
- *   <li>Published buckets are written to {@code sample_results}</li>
- *   <li>A DB failure does not break the broker fan-out to other consumers</li>
- *   <li>Run completion updates {@code test_runs.total_samples} and
- *       {@code test_runs.error_count}</li>
+ *   <li>Published buckets are written to the sample result repository</li>
+ *   <li>A repository failure does not break the broker fan-out to other consumers</li>
+ *   <li>Run completion updates the test run totals</li>
  *   <li>Intermediate flush is triggered when the buffer exceeds
  *       {@link SampleAggregationWriter#FLUSH_THRESHOLD}</li>
  *   <li>Calling {@code startWriting} twice is idempotent</li>
@@ -53,7 +53,7 @@ class SampleAggregationWriterTest {
     TestRunRepository runRepository;
 
     @Autowired
-    JdbcTemplate jdbc;
+    TestPlanRepository planRepository;
 
     private String planId;
     private String runId;
@@ -63,22 +63,21 @@ class SampleAggregationWriterTest {
         planId = UUID.randomUUID().toString();
         runId  = UUID.randomUUID().toString();
 
-        jdbc.update("INSERT INTO test_plans (id, name, tree_data) VALUES (?, ?, ?)",
-                planId, "Aggregation Test Plan", "{}");
-        jdbc.update("INSERT INTO test_runs (id, plan_id, status) VALUES (?, ?, ?)",
-                runId, planId, "RUNNING");
+        planRepository.save(new TestPlanEntity(planId, "Aggregation Test Plan", "default", "{}", Instant.now(), Instant.now(), null));
+        runRepository.create(new TestRunEntity(runId, planId, "RUNNING", Instant.now(), null, 0L, 0L, "default"));
     }
 
     // -------------------------------------------------------------------------
-    // startWriting + publish → sample_results rows appear
+    // startWriting + publish -> sample_results rows appear
     // -------------------------------------------------------------------------
 
     @Test
-    void publishedBuckets_afterStartWriting_arePersistedToDatabase() {
+    void publishedBuckets_afterStartWriting_arePersistedToRepository() {
         writer.startWriting(runId);
 
-        broker.publish(runId, bucket("GET /api/users", Instant.now().truncatedTo(ChronoUnit.SECONDS)));
-        broker.publish(runId, bucket("GET /api/items", Instant.now().truncatedTo(ChronoUnit.SECONDS).plusSeconds(1)));
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        broker.publish(runId, bucket("GET /api/users", now));
+        broker.publish(runId, bucket("GET /api/items", now.plusSeconds(1)));
 
         writer.stopWriting(runId, "COMPLETED");
 
@@ -115,16 +114,16 @@ class SampleAggregationWriterTest {
     }
 
     // -------------------------------------------------------------------------
-    // DB failure does not break broker fan-out
+    // Repository failure does not break broker fan-out
     // -------------------------------------------------------------------------
 
     @Test
-    void dbFailure_doesNotInterruptOtherBrokerConsumers() {
+    void repoFailure_doesNotInterruptOtherBrokerConsumers() {
         // Use a broken repository that always throws.
         SampleResultRepository brokenRepo = new SampleResultRepository() {
             @Override
             public void insertBatch(String rid, java.util.List<SampleBucketRow> buckets) {
-                throw new RuntimeException("Simulated DB outage");
+                throw new RuntimeException("Simulated repository failure");
             }
 
             @Override
@@ -143,15 +142,15 @@ class SampleAggregationWriterTest {
         AtomicInteger receivedByHealthyConsumer = new AtomicInteger(0);
         broker.subscribe(runId, b -> receivedByHealthyConsumer.incrementAndGet());
 
-        // Publishing must not throw even though the DB is broken.
+        // Publishing must not throw even though the repo is broken.
         assertDoesNotThrow(() ->
                 broker.publish(runId, bucket("label", Instant.now().truncatedTo(ChronoUnit.SECONDS))));
 
         // The healthy consumer still received the bucket.
         assertEquals(1, receivedByHealthyConsumer.get(),
-                "Healthy consumer must still receive buckets even when DB writer fails");
+                "Healthy consumer must still receive buckets even when writer fails");
 
-        // Clean up — stopWriting also swallows the DB error.
+        // Clean up
         assertDoesNotThrow(() -> faultyWriter.stopWriting(runId, "COMPLETED"));
     }
 
@@ -187,7 +186,7 @@ class SampleAggregationWriterTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void bufferExceedingFlushThreshold_isWrittenToDbBeforeStopWriting() {
+    void bufferExceedingFlushThreshold_isWrittenBeforeStopWriting() {
         writer.startWriting(runId);
 
         Instant base = Instant.now().truncatedTo(ChronoUnit.SECONDS);
@@ -197,15 +196,16 @@ class SampleAggregationWriterTest {
         }
 
         // At this point the buffer should have been flushed at least once (at threshold).
-        int countBeforeStop = countSampleRows(runId);
+        Instant rangeEnd = base.plusSeconds(aboveThreshold + 1);
+        int countBeforeStop = sampleRepository.findByRunId(runId, base, rangeEnd).size();
         assertTrue(countBeforeStop > 0,
-                "Some rows must be flushed to DB before stopWriting when threshold is exceeded");
+                "Some rows must be flushed before stopWriting when threshold is exceeded");
 
         writer.stopWriting(runId, "COMPLETED");
 
-        int countAfterStop = countSampleRows(runId);
+        int countAfterStop = sampleRepository.findByRunId(runId, base, rangeEnd).size();
         assertEquals(aboveThreshold, countAfterStop,
-                "All " + aboveThreshold + " rows must be in the DB after stopWriting");
+                "All " + aboveThreshold + " rows must be stored after stopWriting");
     }
 
     // -------------------------------------------------------------------------
@@ -217,11 +217,12 @@ class SampleAggregationWriterTest {
         writer.startWriting(runId);
         writer.startWriting(runId); // second call must be a no-op
 
-        broker.publish(runId, bucket("label", Instant.now().truncatedTo(ChronoUnit.SECONDS)));
+        Instant ts = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        broker.publish(runId, bucket("label", ts));
         writer.stopWriting(runId, "COMPLETED");
 
-        // Exactly one row — the bucket was not double-counted.
-        assertEquals(1, countSampleRows(runId),
+        // Exactly one row
+        assertEquals(1, sampleRepository.findByRunId(runId, ts, ts.plusSeconds(1)).size(),
                 "Duplicate startWriting must not cause duplicate rows");
     }
 
@@ -240,11 +241,12 @@ class SampleAggregationWriterTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void noBucketsPublished_zeroDatabaseRows() {
+    void noBucketsPublished_zeroRows() {
         writer.startWriting(runId);
         writer.stopWriting(runId, "COMPLETED");
 
-        assertEquals(0, countSampleRows(runId),
+        Instant now = Instant.now();
+        assertEquals(0, sampleRepository.findByRunId(runId, now.minusSeconds(60), now.plusSeconds(60)).size(),
                 "No rows should be written when no buckets are published");
     }
 
@@ -253,10 +255,8 @@ class SampleAggregationWriterTest {
     // -------------------------------------------------------------------------
 
     private int countSampleRows(String testRunId) {
-        Integer count = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM sample_results WHERE run_id = ?",
-                Integer.class, testRunId);
-        return count != null ? count : 0;
+        Instant now = Instant.now();
+        return sampleRepository.findByRunId(testRunId, now.minusSeconds(60), now.plusSeconds(60)).size();
     }
 
     private static SampleBucket bucket(String label, Instant timestamp) {

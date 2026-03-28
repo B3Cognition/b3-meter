@@ -103,6 +103,18 @@ public class TestRunController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Get SLA status", description = "Returns real-time SLA evaluation status and any violations for a run")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "SLA status returned"),
+            @ApiResponse(responseCode = "404", description = "Run not found or no SLA configured")
+    })
+    @GetMapping("/{runId}/sla")
+    public ResponseEntity<?> getSlaStatus(@PathVariable String runId) {
+        return service.getSlaStatus(runId)
+                .map(s -> ResponseEntity.ok((Object) s))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "List runs", description = "Returns all runs, optionally filtered by plan ID")
     @GetMapping
     public List<TestRunDto> listRuns(
