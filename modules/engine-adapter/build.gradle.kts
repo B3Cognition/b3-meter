@@ -3,7 +3,7 @@
  *
  * Adapts the existing JMeter engine to the new engine-service interfaces.
  * This is the anti-corruption layer between legacy JMeter internals and
- * the clean architecture of jmeter-next.
+ * the clean architecture of b3meter.
  */
 plugins {
     `java-library`
@@ -11,7 +11,7 @@ plugins {
 }
 
 application {
-    mainClass.set("com.jmeternext.engine.adapter.cli.JMeterNextCli")
+    mainClass.set("com.b3meter.engine.adapter.cli.B3MeterCli")
 }
 
 tasks.named<JavaExec>("run") {

@@ -1,7 +1,22 @@
-package com.jmeternext.distributed.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.distributed.controller;
 
-import com.jmeternext.worker.proto.HealthStatus;
-import com.jmeternext.worker.proto.WorkerState;
+import com.b3meter.worker.proto.HealthStatus;
+import com.b3meter.worker.proto.WorkerState;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +48,13 @@ import java.util.logging.Logger;
  * </ul>
  *
  * <p>Thread-safety: all public methods are thread-safe.
+ *
+ * <p>Recovery policy: recovery from {@link WorkerAvailability#UNAVAILABLE} to
+ * {@link WorkerAvailability#AVAILABLE} is <em>immediate</em> — the first
+ * successful heartbeat transitions the worker back to available. There is no
+ * half-open state. Callers should register a {@code WorkerRegistry} as a listener
+ * to handle routing updates on state change.
+ * See {@code specs/010-quality-circuit-breaker/spec.md} §Recovery Policy.
  */
 public class WorkerHealthPoller implements AutoCloseable {
 
@@ -231,6 +253,22 @@ public class WorkerHealthPoller implements AutoCloseable {
         }
     }
 
+    /**
+     * Records a successful heartbeat for the given worker, resetting the miss counter
+     * and transitioning to {@link WorkerAvailability#AVAILABLE} if the worker was
+     * previously unavailable.
+     *
+     * <p><strong>Recovery policy</strong>: recovery is immediate. The first successful
+     * heartbeat after UNAVAILABLE transitions the worker to AVAILABLE with no
+     * intermediate half-open state. If the worker fails again, the miss counter
+     * re-trips it within {@value #MAX_MISSED_HEARTBEATS} polls
+     * ({@value #POLL_INTERVAL_MS}ms each = {@code MAX_MISSED_HEARTBEATS * POLL_INTERVAL_MS}ms).
+     * This is a deliberate policy choice: the health probe is functionally equivalent
+     * to a canary request, and a worker that responds to it is considered ready to
+     * accept work. See {@code specs/010-quality-circuit-breaker/spec.md} §Recovery Policy.
+     *
+     * @param workerId the worker that responded successfully
+     */
     private void recordHeartbeat(String workerId) {
         AtomicInteger counter = missCounters.get(workerId);
         if (counter == null) return;

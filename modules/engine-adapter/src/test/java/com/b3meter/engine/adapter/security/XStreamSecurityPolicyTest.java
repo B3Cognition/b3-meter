@@ -1,4 +1,19 @@
-package com.jmeternext.engine.adapter.security;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.security;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
@@ -19,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * <p>Verifies that:
  * <ul>
- *   <li>Known-safe types (jmeter-next, java.util, java.lang primitives) deserialize correctly.</li>
+ *   <li>Known-safe types (b3meter, java.util, java.lang primitives) deserialize correctly.</li>
  *   <li>Known gadget chain classes raise {@link ForbiddenClassException}.</li>
  *   <li>Dangerous JVM classes (Runtime, ProcessBuilder) are blocked.</li>
  *   <li>The plugin registration API extends the allowlist correctly.</li>
@@ -49,14 +64,14 @@ class XStreamSecurityPolicyTest {
     }
 
     // -------------------------------------------------------------------------
-    // allow: jmeter-next own types
+    // allow: b3meter own types
     // -------------------------------------------------------------------------
 
     @Test
-    void allowsJmeterNextTypes() {
-        // com.jmeternext.** is covered by XStreamSecurityPolicy.apply() called in @BeforeEach.
+    void allowsB3MeterTypes() {
+        // com.b3meter.** is covered by XStreamSecurityPolicy.apply() called in @BeforeEach.
         // Do NOT re-grant allowlist here — that would make this test vacuous as a regression guard.
-        // AllowedTestBean lives in com.jmeternext.engine.adapter.security, covered by com.jmeternext.**.
+        // AllowedTestBean lives in com.b3meter.engine.adapter.security, covered by com.b3meter.**.
         AllowedTestBean original = new AllowedTestBean("hello", 42);
         String xml = xstream.toXML(original);
 
@@ -241,7 +256,7 @@ class XStreamSecurityPolicyTest {
     }
 
     // -------------------------------------------------------------------------
-    // Helper: a simple value type used as a stand-in for real jmeter-next types.
+    // Helper: a simple value type used as a stand-in for real b3meter types.
     // Registered explicitly via allowTypes() in tests that need round-trip.
     // -------------------------------------------------------------------------
 

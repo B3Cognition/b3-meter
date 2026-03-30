@@ -26,7 +26,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.jmeternext.perf.BenchmarkRunner")
+    mainClass.set("com.b3meter.perf.BenchmarkRunner")
 }
 
 // Fat/shadow jar for `java -jar perf/benchmark-runner.jar`
@@ -37,7 +37,7 @@ tasks.register<Jar>("benchmarkJar") {
     destinationDirectory.set(file("${projectDir}"))
 
     manifest {
-        attributes("Main-Class" to "com.jmeternext.perf.BenchmarkRunner")
+        attributes("Main-Class" to "com.b3meter.perf.BenchmarkRunner")
     }
 
     // Include runtime classpath in fat jar

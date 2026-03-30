@@ -1,3 +1,16 @@
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Upload, Download, FilePlus, Undo2, Redo2, Play, Square, StopCircle, Code2, TreePine, ChevronDown, ChevronRight, Activity, GitCompareArrows, Zap, Shield } from 'lucide-react'
 import { TestPlanTree } from './components/TreeEditor'
@@ -533,7 +546,7 @@ export function App() {
 
       {/* ─── TOOLBAR ─── */}
       <header className="toolbar">
-        <span className="toolbar-title">jMeter Next</span>
+        <span className="toolbar-title">b3meter</span>
 
         <div className="toolbar-group">
           <button className="icon-btn" title="Import JMX" onClick={() => fileInputRef.current?.click()}>
@@ -727,8 +740,8 @@ export function App() {
       {showAbout && (
         <div className="modal-backdrop" onClick={() => setShowAbout(false)}>
           <div className="modal-dialog" onClick={e => e.stopPropagation()}>
-            <h3>About jMeter Next</h3>
-            <p style={{ margin: '12px 0' }}>A modern web-based load testing tool inspired by Apache JMeter.</p>
+            <h3>About b3meter</h3>
+            <p style={{ margin: '12px 0' }}>b3meter — a modern load testing platform. Supports Apache JMeter JMX test plan format.</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Built with React + TypeScript + Zustand</p>
             <button className="icon-btn" style={{ marginTop: 16 }} onClick={() => setShowAbout(false)}>Close</button>
           </div>

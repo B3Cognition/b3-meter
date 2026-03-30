@@ -1,7 +1,7 @@
 controller:
   replicaCount: 1
   image:
-    repository: jmeter-next/controller
+    repository: b3meter/controller
     tag: latest
     pullPolicy: IfNotPresent
   service:
@@ -29,7 +29,7 @@ controller:
 worker:
   replicaCount: 3
   image:
-    repository: jmeter-next/worker
+    repository: b3meter/worker
     tag: latest
     pullPolicy: IfNotPresent
   grpcPort: 9090

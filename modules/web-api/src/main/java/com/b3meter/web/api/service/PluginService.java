@@ -1,8 +1,23 @@
-package com.jmeternext.web.api.service;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.service;
 
-import com.jmeternext.web.api.controller.dto.PluginDto;
-import com.jmeternext.web.api.repository.PluginEntity;
-import com.jmeternext.web.api.repository.PluginRepository;
+import com.b3meter.web.api.controller.dto.PluginDto;
+import com.b3meter.web.api.repository.PluginEntity;
+import com.b3meter.web.api.repository.PluginRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

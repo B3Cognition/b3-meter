@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jmeter-next.controller.fullname" . }}
+  name: {{ include "b3meter.controller.fullname" . }}
   labels:
-    {{- include "jmeter-next.controller.labels" . | nindent 4 }}
+    {{- include "b3meter.controller.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.controller.service.type }}
   ports:
@@ -16,4 +16,4 @@ spec:
       protocol: TCP
       name: ui
   selector:
-    {{- include "jmeter-next.controller.selectorLabels" . | nindent 4 }}
+    {{- include "b3meter.controller.selectorLabels" . | nindent 4 }}

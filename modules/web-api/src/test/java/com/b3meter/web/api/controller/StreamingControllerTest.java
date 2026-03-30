@@ -1,12 +1,27 @@
-package com.jmeternext.web.api.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.controller;
 
-import com.jmeternext.engine.service.SampleBucket;
-import com.jmeternext.engine.service.SampleStreamBroker;
-import com.jmeternext.engine.service.TestRunContextRegistry;
-import com.jmeternext.web.api.controller.dto.CreatePlanRequest;
-import com.jmeternext.web.api.controller.dto.StartRunRequest;
-import com.jmeternext.web.api.controller.dto.TestPlanDto;
-import com.jmeternext.web.api.controller.dto.TestRunDto;
+import com.b3meter.engine.service.SampleBucket;
+import com.b3meter.engine.service.SampleStreamBroker;
+import com.b3meter.engine.service.TestRunContextRegistry;
+import com.b3meter.web.api.controller.dto.CreatePlanRequest;
+import com.b3meter.web.api.controller.dto.StartRunRequest;
+import com.b3meter.web.api.controller.dto.TestPlanDto;
+import com.b3meter.web.api.controller.dto.TestRunDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,7 +117,7 @@ class StreamingControllerTest {
         // Publish a bucket to trigger the SSE response from the server.
         Thread.sleep(200);
         String runId = run.id();
-        com.jmeternext.engine.service.SampleBucketConsumer triggerConsumer =
+        com.b3meter.engine.service.SampleBucketConsumer triggerConsumer =
                 bucket -> {}; // no-op, just to have a subscriber
         broker.subscribe(runId, triggerConsumer);
 
@@ -167,7 +182,7 @@ class StreamingControllerTest {
         AtomicReference<SampleBucket> received = new AtomicReference<>();
 
         // Subscribe a test consumer directly to the same broker the SSE controller uses.
-        com.jmeternext.engine.service.SampleBucketConsumer testConsumer = bucket -> {
+        com.b3meter.engine.service.SampleBucketConsumer testConsumer = bucket -> {
             received.set(bucket);
             bucketReceived.countDown();
         };
@@ -206,7 +221,7 @@ class StreamingControllerTest {
     private TestRunDto startRun(String planId) {
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs",
-                new StartRunRequest(planId, 1, 0L, null),
+                new StartRunRequest(planId, 1, 0L, null, null, null, null, null),
                 TestRunDto.class);
         assertNotNull(response.getBody(), "startRun helper: body must not be null");
         return response.getBody();

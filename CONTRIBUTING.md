@@ -1,6 +1,6 @@
-# Contributing to jMeter Next
+# Contributing to b3meter
 
-Thank you for your interest in contributing to jMeter Next. This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to b3meter. This document provides guidelines and instructions for contributing.
 
 ## Development Setup
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing to jMeter Next. This document provid
 
 1. Fork and clone the repository:
    ```bash
-   git clone https://github.com/<your-fork>/jmeter-next.git
-   cd jmeter-next
+   git clone https://github.com/b3-cognition/b3-meter.git
+   cd b3-meter
    ```
 
 2. Build the backend:
@@ -84,6 +84,29 @@ test-plans/               # Sample JMeter test plans
 - Keep commits atomic -- one logical change per commit
 - Add tests for bug fixes and new features
 
+## Adding Dependencies
+
+When adding a new third-party library as a runtime dependency:
+
+1. Verify its license is compatible with Apache License 2.0.
+   Permitted licenses include: Apache 2.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC.
+   Copyleft licenses (GPL, AGPL, SSPL) are **not** permitted in runtime dependencies.
+2. Update `NOTICE` at the repository root with the library name, version, license, and
+   project URL. Follow the existing format.
+3. Run `./gradlew generateLicenseReport` and confirm the new dependency appears correctly.
+
+## Generating License Report
+
+Run the following command to regenerate the bundled third-party license file:
+
+```bash
+./gradlew generateLicenseReport
+```
+
+Output: `build/reports/licenses/THIRD-PARTY-LICENSES.txt`
+
+This file is automatically included in Docker images at `/opt/app/THIRD-PARTY-LICENSES.txt`.
+
 ## Pull Request Process
 
 1. Create a feature branch from `main`:
@@ -107,7 +130,7 @@ test-plans/               # Sample JMeter test plans
 
 ## Reporting Issues
 
-- Use GitHub Issues to report bugs or request features
+- Use GitHub Issues at https://github.com/b3-cognition/b3-meter/issues
 - Include reproduction steps, expected vs actual behavior, and environment details
 - Check existing issues before opening a duplicate
 

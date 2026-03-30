@@ -1,26 +1,41 @@
-package com.jmeternext.engine.adapter;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter;
 
-import com.jmeternext.engine.service.EngineService;
-import com.jmeternext.engine.service.SampleStreamBroker;
-import com.jmeternext.engine.service.TestRunContext;
-import com.jmeternext.engine.service.TestRunContextRegistry;
-import com.jmeternext.engine.service.TestRunHandle;
-import com.jmeternext.engine.service.TestRunResult;
-import com.jmeternext.engine.service.UIBridge;
-import com.jmeternext.engine.service.http.HttpClientFactory;
-import com.jmeternext.engine.service.interpreter.NodeInterpreter;
-import com.jmeternext.engine.service.output.CsvMetricsOutput;
-import com.jmeternext.engine.service.output.InfluxDbMetricsOutput;
-import com.jmeternext.engine.service.output.JsonMetricsOutput;
-import com.jmeternext.engine.service.output.MetricsOutputManager;
-import com.jmeternext.engine.service.output.PrometheusMetricsOutput;
-import com.jmeternext.engine.service.plan.JmxParseException;
-import com.jmeternext.engine.service.plan.JmxTreeWalker;
-import com.jmeternext.engine.service.plan.PlanNode;
-import com.jmeternext.engine.service.shape.LoadShape;
-import com.jmeternext.engine.service.shape.LoadShapeController;
-import com.jmeternext.engine.service.shape.ShapeParser;
-import com.jmeternext.engine.service.VirtualUserExecutor;
+import com.b3meter.engine.service.EngineService;
+import com.b3meter.engine.service.SampleStreamBroker;
+import com.b3meter.engine.service.TestRunContext;
+import com.b3meter.engine.service.TestRunContextRegistry;
+import com.b3meter.engine.service.TestRunHandle;
+import com.b3meter.engine.service.TestRunResult;
+import com.b3meter.engine.service.UIBridge;
+import com.b3meter.engine.service.http.HttpClientFactory;
+import com.b3meter.engine.service.interpreter.NodeInterpreter;
+import com.b3meter.engine.service.output.CsvMetricsOutput;
+import com.b3meter.engine.service.output.InfluxDbMetricsOutput;
+import com.b3meter.engine.service.output.JsonMetricsOutput;
+import com.b3meter.engine.service.output.MetricsOutputManager;
+import com.b3meter.engine.service.output.PrometheusMetricsOutput;
+import com.b3meter.engine.service.plan.JmxParseException;
+import com.b3meter.engine.service.plan.JmxTreeWalker;
+import com.b3meter.engine.service.plan.PlanNode;
+import com.b3meter.engine.service.shape.LoadShape;
+import com.b3meter.engine.service.shape.LoadShapeController;
+import com.b3meter.engine.service.shape.ShapeParser;
+import com.b3meter.engine.service.VirtualUserExecutor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -46,7 +61,7 @@ import java.util.logging.Logger;
  *       registered in {@link TestRunContextRegistry}.</li>
  *   <li>A {@link TestPlanExecutor} is created for the run.</li>
  *   <li>Virtual users are submitted via {@link TestPlanExecutor#execute}, which
- *       internally uses {@link com.jmeternext.engine.service.VirtualUserExecutor}
+ *       internally uses {@link com.b3meter.engine.service.VirtualUserExecutor}
  *       backed by virtual threads.</li>
  *   <li>Each virtual user runs the sampler loop, producing
  *       {@link SimulatedSampler.SampleResult} instances that are accumulated and
@@ -538,7 +553,7 @@ public final class EngineServiceImpl implements EngineService {
      * Lightweight consumer that increments sample/error counters from broker deliveries.
      */
     private static final class CountingConsumer
-            implements com.jmeternext.engine.service.SampleBucketConsumer {
+            implements com.b3meter.engine.service.SampleBucketConsumer {
 
         private final AtomicLong totalSamples;
         private final AtomicLong errorCount;
@@ -549,7 +564,7 @@ public final class EngineServiceImpl implements EngineService {
         }
 
         @Override
-        public void onBucket(com.jmeternext.engine.service.SampleBucket bucket) {
+        public void onBucket(com.b3meter.engine.service.SampleBucket bucket) {
             totalSamples.addAndGet(bucket.sampleCount());
             errorCount.addAndGet(bucket.errorCount());
         }

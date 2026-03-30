@@ -1,6 +1,21 @@
-package com.jmeternext.engine.adapter.util;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.util;
 
-import com.jmeternext.engine.service.util.EngineUtils;
+import com.b3meter.engine.service.util.EngineUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,11 +26,11 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * Bridges legacy JMeter property names to the jmeter-next configuration model.
+ * Bridges legacy JMeter property names to the b3meter configuration model.
  *
  * <p>Legacy JMeter used {@code jmeter.properties} with its own property-key
  * conventions. This bridge reads that format and maps the known legacy keys to
- * the new {@code com.jmeternext.*} key space, providing backward-compatible
+ * the new {@code com.b3meter.*} key space, providing backward-compatible
  * property access while the migration progresses.
  *
  * <p>Usage pattern:
@@ -31,7 +46,7 @@ import java.util.Properties;
 public final class LegacyPropertyBridge {
 
     /**
-     * Known mappings from legacy JMeter property keys to jmeter-next config keys.
+     * Known mappings from legacy JMeter property keys to b3meter config keys.
      *
      * <p>Keys listed here are the most common properties referenced by legacy code.
      * Unknown keys are passed through unchanged.
@@ -127,7 +142,7 @@ public final class LegacyPropertyBridge {
     }
 
     /**
-     * Returns the new jmeter-next configuration key for the given legacy key,
+     * Returns the new b3meter configuration key for the given legacy key,
      * or the key itself if no mapping is defined.
      *
      * @param legacyKey legacy JMeter property key; must not be {@code null}
@@ -161,43 +176,43 @@ public final class LegacyPropertyBridge {
 
         // Sampler defaults
         map.put("jmeter.save.saveservice.output_format",
-                "com.jmeternext.sampler.output.format");
+                "com.b3meter.sampler.output.format");
         map.put("jmeter.save.saveservice.response_code",
-                "com.jmeternext.sampler.save.response_code");
+                "com.b3meter.sampler.save.response_code");
         map.put("jmeter.save.saveservice.successful",
-                "com.jmeternext.sampler.save.success");
+                "com.b3meter.sampler.save.success");
         map.put("jmeter.save.saveservice.thread_name",
-                "com.jmeternext.sampler.save.thread_name");
+                "com.b3meter.sampler.save.thread_name");
         map.put("jmeter.save.saveservice.time",
-                "com.jmeternext.sampler.save.elapsed_ms");
+                "com.b3meter.sampler.save.elapsed_ms");
         map.put("jmeter.save.saveservice.label",
-                "com.jmeternext.sampler.save.label");
+                "com.b3meter.sampler.save.label");
         map.put("jmeter.save.saveservice.bytes",
-                "com.jmeternext.sampler.save.bytes");
+                "com.b3meter.sampler.save.bytes");
         map.put("jmeter.save.saveservice.latency",
-                "com.jmeternext.sampler.save.latency_ms");
+                "com.b3meter.sampler.save.latency_ms");
 
         // Thread group
         map.put("jmeter.threadgroup.on_sample_error",
-                "com.jmeternext.thread.on_sample_error");
+                "com.b3meter.thread.on_sample_error");
 
         // HTTP sampler
         map.put("HTTPSampler.connect_timeout",
-                "com.jmeternext.http.connect_timeout_ms");
+                "com.b3meter.http.connect_timeout_ms");
         map.put("HTTPSampler.response_timeout",
-                "com.jmeternext.http.response_timeout_ms");
+                "com.b3meter.http.response_timeout_ms");
 
         // Proxy
         map.put("jmeter.proxy.port",
-                "com.jmeternext.proxy.port");
+                "com.b3meter.proxy.port");
         map.put("jmeter.proxy.ssl.cert",
-                "com.jmeternext.proxy.ssl.cert_path");
+                "com.b3meter.proxy.ssl.cert_path");
 
         // Reporting / dashboard
         map.put("jmeter.reportgenerator.report_title",
-                "com.jmeternext.report.title");
+                "com.b3meter.report.title");
         map.put("jmeter.reportgenerator.overall_granularity",
-                "com.jmeternext.report.granularity_ms");
+                "com.b3meter.report.granularity_ms");
 
         return Collections.unmodifiableMap(map);
     }

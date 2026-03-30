@@ -1,25 +1,40 @@
-package com.jmeternext.worker.node;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.worker.node;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
-import com.jmeternext.engine.adapter.EngineServiceImpl;
-import com.jmeternext.engine.adapter.InMemorySampleStreamBroker;
-import com.jmeternext.engine.adapter.NoOpUIBridge;
-import com.jmeternext.engine.adapter.http.Hc5HttpClientFactory;
-import com.jmeternext.engine.service.SampleBucket;
-import com.jmeternext.engine.service.SampleBucketConsumer;
-import com.jmeternext.engine.service.TestRunHandle;
-import com.jmeternext.engine.service.http.HttpClientFactory;
-import com.jmeternext.worker.proto.ConfigureAck;
-import com.jmeternext.worker.proto.HealthRequest;
-import com.jmeternext.worker.proto.HealthStatus;
-import com.jmeternext.worker.proto.SampleResultBatch;
-import com.jmeternext.worker.proto.StartAck;
-import com.jmeternext.worker.proto.StartMessage;
-import com.jmeternext.worker.proto.StopAck;
-import com.jmeternext.worker.proto.StopMessage;
-import com.jmeternext.worker.proto.TestPlanMessage;
-import com.jmeternext.worker.proto.WorkerServiceGrpc;
+import com.b3meter.engine.adapter.EngineServiceImpl;
+import com.b3meter.engine.adapter.InMemorySampleStreamBroker;
+import com.b3meter.engine.adapter.NoOpUIBridge;
+import com.b3meter.engine.adapter.http.Hc5HttpClientFactory;
+import com.b3meter.engine.service.SampleBucket;
+import com.b3meter.engine.service.SampleBucketConsumer;
+import com.b3meter.engine.service.TestRunHandle;
+import com.b3meter.engine.service.http.HttpClientFactory;
+import com.b3meter.worker.proto.ConfigureAck;
+import com.b3meter.worker.proto.HealthRequest;
+import com.b3meter.worker.proto.HealthStatus;
+import com.b3meter.worker.proto.SampleResultBatch;
+import com.b3meter.worker.proto.StartAck;
+import com.b3meter.worker.proto.StartMessage;
+import com.b3meter.worker.proto.StopAck;
+import com.b3meter.worker.proto.StopMessage;
+import com.b3meter.worker.proto.TestPlanMessage;
+import com.b3meter.worker.proto.WorkerServiceGrpc;
 import io.grpc.stub.StreamObserver;
 
 import java.nio.charset.StandardCharsets;

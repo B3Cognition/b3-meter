@@ -1,4 +1,4 @@
-# jMeter Next
+# b3meter
 
 > A simple, portable, fork-friendly load testing platform for the cloud era.
 
@@ -8,11 +8,13 @@
 
 ## What is this?
 
-jMeter Next is a modern rewrite of Apache JMeter. It's designed to be:
+b3meter is a modern load testing platform. It's designed to be:
 
 - **Simple** — clone, build, run. No database, no Terraform, no cloud account needed.
 - **Portable** — runs on your laptop, Docker, or Kubernetes. Fork it and add your own stuff.
 - **Powerful** — 27 protocol samplers, arrival-rate executors, load shapes, distributed mode with accurate percentiles.
+
+Supports Apache JMeter JMX test plan format. _Apache JMeter is a trademark of the Apache Software Foundation._
 
 ---
 
@@ -51,8 +53,8 @@ sudo apt install nodejs
 ### Step 2: Clone the Repo
 
 ```bash
-git clone https://github.com/Testimonial/jmeter-next.git
-cd jmeter-next
+git clone https://github.com/b3-cognition/b3-meter.git
+cd b3-meter
 ```
 
 ### Step 3: Start the Backend
@@ -101,8 +103,8 @@ Open **http://localhost:3000** in your browser.
 ### Single Node
 
 ```bash
-docker build -f Dockerfile.controller -t jmeter-next .
-docker run -p 8080:8080 jmeter-next
+docker build -f Dockerfile.controller -t b3meter .
+docker run -p 8080:8080 b3meter
 ```
 
 ### Distributed Mode (1 Controller + 3 Workers)
@@ -126,7 +128,7 @@ Starts 11 protocol mock servers (HTTP, WebSocket, SSE, HLS, MQTT, gRPC, DASH, We
 ## Run on Kubernetes
 
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next \
+helm install b3meter ./deploy/helm/b3meter \
   --set worker.replicaCount=5
 ```
 
@@ -134,7 +136,7 @@ That's it. The Helm chart creates a controller + 5 workers. No persistent storag
 
 To enable persistent storage (keeps test plans across pod restarts):
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next \
+helm install b3meter ./deploy/helm/b3meter \
   --set worker.replicaCount=5 \
   --set persistence.enabled=true \
   --set persistence.storageClass=gp3
@@ -255,7 +257,7 @@ After starting the backend:
 ## Project Structure
 
 ```
-jmeter-next/
+
 ├── modules/
 │   ├── engine-service/          # Core engine (0 dependencies, pure JDK)
 │   ├── engine-adapter/          # CLI + JMX parser + HTTP client
@@ -293,7 +295,7 @@ cd web-ui && npm test
 
 ## Forking for Your Team
 
-jMeter Next is designed to be forked. There are:
+b3meter is designed to be forked. There are:
 
 - **No company-specific URLs** in any workflow or config
 - **No database to set up** (in-memory storage)

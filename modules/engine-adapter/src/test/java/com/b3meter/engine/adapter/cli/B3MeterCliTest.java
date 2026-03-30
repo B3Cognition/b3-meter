@@ -1,9 +1,24 @@
-package com.jmeternext.engine.adapter.cli;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.cli;
 
-import com.jmeternext.engine.service.EngineService;
-import com.jmeternext.engine.service.TestRunContext;
-import com.jmeternext.engine.service.TestRunHandle;
-import com.jmeternext.engine.service.TestRunResult;
+import com.b3meter.engine.service.EngineService;
+import com.b3meter.engine.service.TestRunContext;
+import com.b3meter.engine.service.TestRunHandle;
+import com.b3meter.engine.service.TestRunResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -26,12 +41,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for {@link JMeterNextCli}.
+ * Unit tests for {@link B3MeterCli}.
  *
  * <p>All tests use a stub {@link EngineService} injected via constructor —
  * no real JMeter engine or file I/O is required.
  */
-class JMeterNextCliTest {
+class B3MeterCliTest {
 
     @TempDir
     File tempDir;
@@ -45,8 +60,8 @@ class JMeterNextCliTest {
         errBuffer = new StringWriter();
     }
 
-    private JMeterNextCli cli(EngineService engineService) {
-        return new JMeterNextCli(
+    private B3MeterCli cli(EngineService engineService) {
+        return new B3MeterCli(
                 engineService,
                 new PrintWriter(outBuffer, true),
                 new PrintWriter(errBuffer, true)
@@ -68,7 +83,7 @@ class JMeterNextCliTest {
         // -n without -t
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED)).run(new String[]{"-n"});
 
-        assertEquals(JMeterNextCli.EXIT_CONFIG_ERROR, code,
+        assertEquals(B3MeterCli.EXIT_CONFIG_ERROR, code,
                 "Missing -t should return exit code 2");
         assertTrue(errBuffer.toString().contains("-t"),
                 "Error output should mention -t flag");
@@ -81,7 +96,7 @@ class JMeterNextCliTest {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED))
                 .run(new String[]{"-t", plan.getAbsolutePath()});
 
-        assertEquals(JMeterNextCli.EXIT_CONFIG_ERROR, code,
+        assertEquals(B3MeterCli.EXIT_CONFIG_ERROR, code,
                 "Missing -n should return exit code 2");
         assertTrue(errBuffer.toString().contains("-n"),
                 "Error output should mention -n flag");
@@ -91,7 +106,7 @@ class JMeterNextCliTest {
     void noArgs_returnsExitCode2() {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED)).run(new String[]{});
 
-        assertEquals(JMeterNextCli.EXIT_CONFIG_ERROR, code,
+        assertEquals(B3MeterCli.EXIT_CONFIG_ERROR, code,
                 "No arguments should return exit code 2");
     }
 
@@ -106,7 +121,7 @@ class JMeterNextCliTest {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED))
                 .run(new String[]{"-n", "-t", missing.getAbsolutePath()});
 
-        assertEquals(JMeterNextCli.EXIT_CONFIG_ERROR, code,
+        assertEquals(B3MeterCli.EXIT_CONFIG_ERROR, code,
                 "Non-existent plan file should return exit code 2");
         assertTrue(errBuffer.toString().contains("does not exist"),
                 "Error output should mention the file does not exist");
@@ -118,7 +133,7 @@ class JMeterNextCliTest {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED))
                 .run(new String[]{"-n", "-t", tempDir.getAbsolutePath()});
 
-        assertEquals(JMeterNextCli.EXIT_CONFIG_ERROR, code,
+        assertEquals(B3MeterCli.EXIT_CONFIG_ERROR, code,
                 "Directory passed as plan should return exit code 2");
         assertTrue(errBuffer.toString().contains("not a file"),
                 "Error output should mention path is not a file");
@@ -135,7 +150,7 @@ class JMeterNextCliTest {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED))
                 .run(new String[]{"-n", "-t", plan.getAbsolutePath()});
 
-        assertEquals(JMeterNextCli.EXIT_OK, code,
+        assertEquals(B3MeterCli.EXIT_OK, code,
                 "-n -t with valid plan and STOPPED status should return exit code 0");
     }
 
@@ -146,7 +161,7 @@ class JMeterNextCliTest {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.ERROR))
                 .run(new String[]{"-n", "-t", plan.getAbsolutePath()});
 
-        assertEquals(JMeterNextCli.EXIT_TEST_FAILURE, code,
+        assertEquals(B3MeterCli.EXIT_TEST_FAILURE, code,
                 "Engine ERROR status should return exit code 1");
     }
 
@@ -221,10 +236,10 @@ class JMeterNextCliTest {
     void helpFlag_printsUsageAndReturnsExitCode0() {
         int code = cli(noOpEngine(TestRunContext.TestRunStatus.STOPPED)).run(new String[]{"--help"});
 
-        assertEquals(JMeterNextCli.EXIT_OK, code,
+        assertEquals(B3MeterCli.EXIT_OK, code,
                 "--help should return exit code 0");
         String output = outBuffer.toString();
-        assertTrue(output.contains("jmeter-next") || output.contains("Usage"),
+        assertTrue(output.contains("b3meter") || output.contains("Usage"),
                 "--help output should contain command name or 'Usage'");
     }
 

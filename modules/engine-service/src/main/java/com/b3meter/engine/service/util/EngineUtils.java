@@ -1,4 +1,19 @@
-package com.jmeternext.engine.service.util;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.service.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +47,7 @@ import java.util.regex.Pattern;
  */
 public final class EngineUtils {
 
-    /** Version of the jmeter-next engine; override via system property {@code jmeter.version}. */
+    /** Version of the b3meter engine; override via system property {@code jmeter.version}. */
     private static final String DEFAULT_VERSION = "0.1.0-SNAPSHOT";
 
     /**
@@ -113,7 +128,7 @@ public final class EngineUtils {
     // -------------------------------------------------------------------------
 
     /**
-     * Returns the jmeter-next engine version.
+     * Returns the b3meter engine version.
      *
      * <p>The value is read from the {@code jmeter.version} system property if set;
      * otherwise the build-time default ({@value DEFAULT_VERSION}) is returned.

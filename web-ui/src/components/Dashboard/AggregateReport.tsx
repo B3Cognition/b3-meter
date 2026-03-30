@@ -1,10 +1,16 @@
-/**
- * AggregateReport — per-label running totals table, similar to JMeter's Aggregate Report listener.
- *
- * Displays cumulative stats grouped by label. The primary difference from SummaryReport is
- * that this view emphasises total counts and running totals rather than time-windowed stats.
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useMemo } from 'react';
 import { useRunStore } from '../../store/runStore.js';
 import { aggregateByLabel } from './SummaryReport.js';

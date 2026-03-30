@@ -1,2 +1,2 @@
-com.jmeternext.engine.service.plugin.StubHttpSamplerComponent
-com.jmeternext.engine.service.plugin.StubThreadGroupComponent
+com.b3meter.engine.service.plugin.StubHttpSamplerComponent
+com.b3meter.engine.service.plugin.StubThreadGroupComponent

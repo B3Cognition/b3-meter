@@ -1,17 +1,16 @@
-/**
- * PluginUpload — file upload area with drag-and-drop support for plugin JARs.
- *
- * - Accepts only .jar files.
- * - Rejects files larger than MAX_JAR_SIZE_BYTES (50 MB) before hitting the API.
- * - Calls onUpload(file) when a valid file is selected or dropped.
- * - Shows client-side validation errors inline.
- *
- * Props:
- *   onUpload    — async callback invoked with the selected File
- *   isUploading — when true the input is disabled and a loading state is shown
- *   error       — external error message to display (e.g. from the API)
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useState, useCallback, useRef } from 'react';
 import './PluginManager.css';
 

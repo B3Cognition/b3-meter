@@ -1,14 +1,16 @@
-/**
- * RunControls — Run/Stop/Stop Now buttons with status state machine.
- *
- * - Run button is enabled only when a plan is loaded, the status is idle/stopped/error,
- *   and there are no validation errors.
- * - Clicking Run calls startRun API and transitions status to "starting".
- * - While running (starting/running/stopping), Stop and Stop Now buttons are shown.
- * - Stop triggers a graceful stop; Stop Now triggers an immediate stop.
- * - A status badge with colour coding reflects the current RunStatus.
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRunStore } from '../../store/runStore.js';
 import { useTestPlanStore } from '../../store/testPlanStore.js';

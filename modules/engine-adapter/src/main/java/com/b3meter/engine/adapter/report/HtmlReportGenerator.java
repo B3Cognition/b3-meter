@@ -1,4 +1,19 @@
-package com.jmeternext.engine.adapter.report;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.report;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -291,12 +306,12 @@ public final class HtmlReportGenerator {
             w.write("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
             w.write("<meta charset=\"UTF-8\">\n");
             w.write("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-            w.write("<title>jmeter-next Test Report</title>\n");
+            w.write("<title>b3meter Test Report</title>\n");
             writeEmbeddedCss(w);
             w.write("</head>\n<body>\n");
 
             // Header
-            w.write("<header><h1>jmeter-next Test Report</h1></header>\n");
+            w.write("<header><h1>b3meter Test Report</h1></header>\n");
 
             // Summary cards
             w.write("<section class=\"summary\">\n");

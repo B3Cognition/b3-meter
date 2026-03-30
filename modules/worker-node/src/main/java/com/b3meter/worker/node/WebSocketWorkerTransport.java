@@ -1,16 +1,31 @@
-package com.jmeternext.worker.node;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.worker.node;
 
 import com.google.protobuf.Timestamp;
-import com.jmeternext.engine.service.SampleBucket;
-import com.jmeternext.worker.proto.ConfigureAck;
-import com.jmeternext.worker.proto.HealthRequest;
-import com.jmeternext.worker.proto.HealthStatus;
-import com.jmeternext.worker.proto.SampleResultBatch;
-import com.jmeternext.worker.proto.StartAck;
-import com.jmeternext.worker.proto.StartMessage;
-import com.jmeternext.worker.proto.StopAck;
-import com.jmeternext.worker.proto.StopMessage;
-import com.jmeternext.worker.proto.TestPlanMessage;
+import com.b3meter.engine.service.SampleBucket;
+import com.b3meter.worker.proto.ConfigureAck;
+import com.b3meter.worker.proto.HealthRequest;
+import com.b3meter.worker.proto.HealthStatus;
+import com.b3meter.worker.proto.SampleResultBatch;
+import com.b3meter.worker.proto.StartAck;
+import com.b3meter.worker.proto.StartMessage;
+import com.b3meter.worker.proto.StopAck;
+import com.b3meter.worker.proto.StopMessage;
+import com.b3meter.worker.proto.TestPlanMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,9 +66,9 @@ import java.util.logging.Logger;
  * that both gRPC and WebSocket paths execute exactly the same logic.
  *
  * <p>Reconnection and exponential back-off are the responsibility of the connecting
- * controller client ({@link com.jmeternext.distributed.controller.WebSocketWorkerTransport}).
+ * controller client ({@link com.b3meter.distributed.controller.WebSocketWorkerTransport}).
  *
- * @see com.jmeternext.distributed.controller.WorkerTransport
+ * @see com.b3meter.distributed.controller.WorkerTransport
  */
 public class WebSocketWorkerTransport {
 

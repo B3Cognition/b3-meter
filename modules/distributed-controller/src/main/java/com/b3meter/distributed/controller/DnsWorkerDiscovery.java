@@ -1,4 +1,19 @@
-package com.jmeternext.distributed.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.distributed.controller;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -21,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Auto-discovers jMeter Next worker nodes via DNS SRV record lookup.
+ * Auto-discovers b3meter worker nodes via DNS SRV record lookup.
  *
  * <p>Designed for Kubernetes headless Services where each worker pod is
  * registered as an SRV record under the service DNS name. This enables
@@ -57,7 +72,7 @@ public class DnsWorkerDiscovery {
      * Creates a DNS worker discovery instance.
      *
      * @param serviceName the Kubernetes headless service DNS name,
-     *                    e.g., {@code "jmeter-next-worker.default.svc.cluster.local"}
+     *                    e.g., {@code "b3meter-worker.default.svc.cluster.local"}
      * @param defaultPort the default gRPC port to use when SRV records are
      *                    unavailable and A record fallback is used
      * @throws NullPointerException     if serviceName is null

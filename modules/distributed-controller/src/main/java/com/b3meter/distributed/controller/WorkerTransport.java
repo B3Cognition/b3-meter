@@ -1,12 +1,27 @@
-package com.jmeternext.distributed.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.distributed.controller;
 
-import com.jmeternext.engine.service.SampleBucketConsumer;
-import com.jmeternext.worker.proto.ConfigureAck;
-import com.jmeternext.worker.proto.HealthStatus;
-import com.jmeternext.worker.proto.StartAck;
-import com.jmeternext.worker.proto.StartMessage;
-import com.jmeternext.worker.proto.StopAck;
-import com.jmeternext.worker.proto.TestPlanMessage;
+import com.b3meter.engine.service.SampleBucketConsumer;
+import com.b3meter.worker.proto.ConfigureAck;
+import com.b3meter.worker.proto.HealthStatus;
+import com.b3meter.worker.proto.StartAck;
+import com.b3meter.worker.proto.StartMessage;
+import com.b3meter.worker.proto.StopAck;
+import com.b3meter.worker.proto.TestPlanMessage;
 
 /**
  * Transport-agnostic interface for communicating with a single remote worker node.
@@ -48,7 +63,7 @@ public interface WorkerTransport {
      * Opens an asynchronous result stream from the worker.
      *
      * <p>The {@code consumer} callback is invoked for each received
-     * {@link com.jmeternext.worker.proto.SampleResultBatch}. The callback may be invoked
+     * {@link com.b3meter.worker.proto.SampleResultBatch}. The callback may be invoked
      * from a background thread; implementations must be thread-safe.
      *
      * @param runId    the run whose results should be streamed

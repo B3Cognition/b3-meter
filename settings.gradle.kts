@@ -18,7 +18,7 @@ dependencyResolutionManagement {
     // libs.versions.toml at gradle/libs.versions.toml is auto-discovered by Gradle 8.x
 }
 
-rootProject.name = "jmeter-next"
+rootProject.name = "b3meter"
 
 // Module: API interfaces — UIBridge, TestRunContext
 include("modules:engine-service")

@@ -1,23 +1,16 @@
-/**
- * Tests for ProxyRecorderPanel component.
- *
- * Covers:
- *   - Renders configuration form with default values
- *   - Start/Stop buttons have correct initial disabled state
- *   - Start Recording calls startRecording API and transitions to recording
- *   - Stop Recording calls stopRecording API and fetches updated capture list
- *   - Recorder status badge shows Idle / Recording
- *   - Config fields are disabled while recording
- *   - Captured requests list is empty initially
- *   - Captured list renders method, URL, status code and elapsed time
- *   - Capture count shows correct pluralisation
- *   - Apply button disabled when no captures
- *   - Apply button enabled when captures exist
- *   - Apply to Test Plan calls applyToTestPlan API and invokes onApply callback
- *   - API error is shown in error area
- *   - Refresh button calls getCapturedRequests
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ProxyRecorderPanel } from '../components/ProxyRecorder/ProxyRecorderPanel.js';

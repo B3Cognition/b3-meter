@@ -1,24 +1,16 @@
-/**
- * Tests for DistributedConfig component.
- *
- * Covers:
- *   - Renders loading state while fetching workers
- *   - Renders empty state when no workers registered
- *   - Renders worker list with hostname, port, and status badge
- *   - Status badges display correct label for AVAILABLE, BUSY, OFFLINE
- *   - Selecting a worker via checkbox updates selection count
- *   - Deselecting a worker removes it from selection
- *   - "Start Distributed Run" button disabled when no workers selected
- *   - "Start Distributed Run" button disabled when no planId provided
- *   - "Start Distributed Run" button enabled when planId set and workers selected
- *   - Clicking "Start Distributed Run" calls onStartDistributedRun with addresses
- *   - "+ Add Worker" button shows the inline form
- *   - Cancel hides the form
- *   - Registering a new worker appends it to the list
- *   - Remove button calls removeWorker API and removes from list
- *   - API error shown on load failure
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { DistributedConfig } from '../components/DistributedConfig/DistributedConfig.js';

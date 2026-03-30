@@ -1,4 +1,19 @@
-package com.jmeternext.web.api.security;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.security;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,16 +21,16 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.CSP_VALUE;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HEADER_CSP;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HEADER_HSTS;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HEADER_RP;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HEADER_XCTO;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HEADER_XFO;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.HSTS_VALUE;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.RP_VALUE;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.XCTO_VALUE;
-import static com.jmeternext.web.api.security.SecurityHeadersFilter.XFO_VALUE;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.CSP_VALUE;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HEADER_CSP;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HEADER_HSTS;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HEADER_RP;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HEADER_XCTO;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HEADER_XFO;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.HSTS_VALUE;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.RP_VALUE;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.XCTO_VALUE;
+import static com.b3meter.web.api.security.SecurityHeadersFilter.XFO_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;

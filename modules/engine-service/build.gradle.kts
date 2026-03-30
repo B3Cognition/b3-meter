@@ -10,6 +10,9 @@ plugins {
 }
 
 dependencies {
+    // Jackson databind for PlanNodeSerializer (framework-free; Jackson is a plain library)
+    implementation(rootProject.libs.jackson.databind)
+
     // No framework dependencies — pure API interfaces only (Principle I)
     testImplementation(platform(rootProject.libs.junit.bom))
     testImplementation(rootProject.libs.junit.jupiter)

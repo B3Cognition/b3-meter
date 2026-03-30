@@ -1,12 +1,31 @@
-package com.jmeternext.web.api.service;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.service;
 
-import com.jmeternext.web.api.controller.dto.CreatePlanRequest;
-import com.jmeternext.web.api.controller.dto.TestPlanDto;
-import com.jmeternext.web.api.controller.dto.TestPlanRevisionDto;
-import com.jmeternext.web.api.controller.dto.UpdatePlanRequest;
-import com.jmeternext.web.api.repository.TestPlanEntity;
-import com.jmeternext.web.api.repository.TestPlanRepository;
-import com.jmeternext.web.api.repository.TestPlanRevisionEntity;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.b3meter.engine.service.plan.JmxSerializer;
+import com.b3meter.engine.service.plan.PlanNode;
+import com.b3meter.engine.service.plan.PlanNodeSerializer;
+import com.b3meter.web.api.controller.dto.CreatePlanRequest;
+import com.b3meter.web.api.controller.dto.TestPlanDto;
+import com.b3meter.web.api.controller.dto.TestPlanRevisionDto;
+import com.b3meter.web.api.controller.dto.UpdatePlanRequest;
+import com.b3meter.web.api.repository.TestPlanEntity;
+import com.b3meter.web.api.repository.TestPlanRepository;
+import com.b3meter.web.api.repository.TestPlanRevisionEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,12 +39,17 @@ import java.util.UUID;
 /**
  * Business logic for test plan CRUD, JMX import/export, and revision history.
  *
- * <p>JMX import stores the raw XML as {@code tree_data}; full XStream parsing
- * is deferred to a later integration task (see T014 task notes).
+ * <p>JMX import parses the uploaded file with {@link com.b3meter.engine.service.plan.JmxTreeWalker},
+ * serializes the resulting {@link PlanNode} tree to JSON using {@link PlanNodeSerializer},
+ * and stores that JSON string as {@code tree_data} in {@link TestPlanEntity}
+ * (T014 / spec 009-quality-jmx-parsing).
  *
- * <p>JMX export reads {@code tree_data} and returns it verbatim as XML.
- * When the stored data is plain JSON (not XML), a minimal JMX wrapper is generated
- * so the export contract always returns valid XML.
+ * <p>JMX export detects the {@code tree_data} format:
+ * <ul>
+ *   <li>Starts with {@code {}: JSON format (new) — deserialize and reconstruct JMX XML.</li>
+ *   <li>Starts with {@code <}: legacy raw XML — return unchanged.</li>
+ *   <li>Otherwise: return an empty JMX envelope.</li>
+ * </ul>
  */
 @Service
 public class TestPlanService {
@@ -146,12 +170,16 @@ public class TestPlanService {
     }
 
     /**
-     * Imports a JMX file, storing its raw XML content as the plan's tree data.
+     * Imports a JMX file, parsing it into a {@link PlanNode} tree and storing
+     * the tree as JSON in {@code treeData} (T014 / spec 009-quality-jmx-parsing).
+     *
+     * <p>The raw XML is used only for parsing/validation and is not stored.
      *
      * @param file the uploaded JMX file; must not be null
      * @return the created plan as a DTO
      * @throws IllegalArgumentException if the file exceeds {@link #MAX_JMX_SIZE_BYTES}
-     * @throws IllegalStateException    if reading the file fails
+     *                                  or if the JMX is malformed / empty
+     * @throws IllegalStateException    if reading the file or serializing the tree fails
      */
     public TestPlanDto importJmx(MultipartFile file) {
         if (file.getSize() > MAX_JMX_SIZE_BYTES) {
@@ -164,15 +192,25 @@ public class TestPlanService {
             throw new IllegalStateException("Failed to read uploaded JMX file", e);
         }
 
-        // Validate JMX using StAX-based JmxTreeWalker (no XStream, no class resolution)
-        // This parses JMX natively without needing old jMeter classes on classpath
+        // Parse JMX using StAX-based JmxTreeWalker (no XStream, no class resolution).
+        // This validates the JMX and produces a fully-typed PlanNode tree.
+        PlanNode planNode;
         try {
-            var planNode = com.jmeternext.engine.service.plan.JmxTreeWalker.parse(rawXml);
+            planNode = com.b3meter.engine.service.plan.JmxTreeWalker.parse(rawXml);
             if (planNode == null || planNode.getChildren().isEmpty()) {
                 throw new IllegalArgumentException("JMX file rejected: empty or invalid test plan");
             }
-        } catch (com.jmeternext.engine.service.plan.JmxParseException e) {
+        } catch (com.b3meter.engine.service.plan.JmxParseException e) {
             throw new IllegalArgumentException("JMX file rejected: malformed XML — " + e.getMessage(), e);
+        }
+
+        // Serialize the parsed tree to JSON for storage (T014 / spec 009-quality-jmx-parsing).
+        // rawXml is only used above for parsing/validation — not stored.
+        String treeData;
+        try {
+            treeData = PlanNodeSerializer.serialize(planNode);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize parsed JMX tree to JSON", e);
         }
 
         String planName = derivePlanName(file.getOriginalFilename());
@@ -181,7 +219,7 @@ public class TestPlanService {
                 UUID.randomUUID().toString(),
                 planName,
                 DEFAULT_OWNER,
-                rawXml,
+                treeData,
                 now,
                 now,
                 null
@@ -192,8 +230,17 @@ public class TestPlanService {
     /**
      * Exports a plan's tree data as JMX XML.
      *
+     * <p>Format detection:
+     * <ul>
+     *   <li>Starts with {@code {}: JSON-format treeData (new, post-T014) — deserialize
+     *       the {@link PlanNode} tree and reconstruct JMX XML via {@link JmxSerializer}.</li>
+     *   <li>Starts with {@code <}: legacy raw XML — return unchanged (backward compat).</li>
+     *   <li>Otherwise (blank or unknown): return an empty JMX envelope.</li>
+     * </ul>
+     *
      * @param id the plan identifier; must not be null
-     * @return the raw XML content, or empty if the plan does not exist
+     * @return the JMX XML content, or empty if the plan does not exist
+     * @throws IllegalStateException if JSON treeData cannot be deserialized
      */
     public Optional<String> exportJmx(String id) {
         return repository.findById(id).map(entity -> {
@@ -201,11 +248,22 @@ public class TestPlanService {
             if (treeData == null || treeData.isBlank()) {
                 return emptyJmxXml(entity.name());
             }
-            // If stored data looks like XML already, return it directly.
-            // Otherwise wrap in a minimal JMX envelope.
+            // JSON format (new, post-T014): deserialize PlanNode tree and reconstruct JMX XML.
+            if (treeData.trim().startsWith("{")) {
+                try {
+                    PlanNode root = PlanNodeSerializer.deserialize(treeData);
+                    return JmxSerializer.toJmx(root);
+                } catch (JsonProcessingException e) {
+                    throw new IllegalStateException(
+                            "Failed to reconstruct JMX XML from stored JSON tree for plan "
+                            + entity.id(), e);
+                }
+            }
+            // Legacy XML format: return verbatim (FR-009.006).
             if (treeData.trim().startsWith("<")) {
                 return treeData;
             }
+            // Unknown format: return minimal envelope.
             return emptyJmxXml(entity.name());
         });
     }

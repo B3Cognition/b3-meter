@@ -4,7 +4,7 @@ server:
 
 spring:
   application:
-    name: jmeter-next
+    name: b3meter
   threads:
     virtual:
       enabled: true
@@ -38,7 +38,7 @@ management:
         enabled: true
   metrics:
     tags:
-      application: jmeter-next
+      application: b3meter
 
 jmeter:
   http:

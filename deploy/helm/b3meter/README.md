@@ -10,19 +10,19 @@ Kubernetes Helm chart for deploying jMeter Next in distributed mode with a contr
 ## Install
 
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next
+helm install b3meter ./deploy/helm/b3meter
 ```
 
 ## With 5 workers
 
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next --set worker.replicaCount=5
+helm install b3meter ./deploy/helm/b3meter --set worker.replicaCount=5
 ```
 
 ## With ingress
 
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next \
+helm install b3meter ./deploy/helm/b3meter \
   --set controller.ingress.enabled=true \
   --set controller.ingress.hosts[0].host=jmeter.example.com
 ```
@@ -30,7 +30,7 @@ helm install jmeter-next ./deploy/helm/jmeter-next \
 ## With autoscaling
 
 ```bash
-helm install jmeter-next ./deploy/helm/jmeter-next \
+helm install b3meter ./deploy/helm/b3meter \
   --set worker.autoscaling.enabled=true \
   --set worker.autoscaling.minReplicas=3 \
   --set worker.autoscaling.maxReplicas=20
@@ -58,13 +58,13 @@ See `values.yaml` for all configurable parameters.
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `controller.replicaCount` | Controller replicas (should be 1) | `1` |
-| `controller.image.repository` | Controller image | `jmeter-next/controller` |
+| `controller.image.repository` | Controller image | `b3meter/controller` |
 | `controller.image.tag` | Controller image tag | `latest` |
 | `controller.service.httpPort` | API port | `8080` |
 | `controller.service.uiPort` | Web UI port | `3000` |
 | `controller.ingress.enabled` | Enable ingress | `false` |
 | `worker.replicaCount` | Number of worker pods | `3` |
-| `worker.image.repository` | Worker image | `jmeter-next/worker` |
+| `worker.image.repository` | Worker image | `b3meter/worker` |
 | `worker.image.tag` | Worker image tag | `latest` |
 | `worker.grpcPort` | Worker gRPC port | `9090` |
 | `worker.healthPort` | Worker health check port | `8090` |
@@ -78,11 +78,11 @@ See `values.yaml` for all configurable parameters.
 ## Verify
 
 ```bash
-helm test jmeter-next
+helm test b3meter
 ```
 
 ## Uninstall
 
 ```bash
-helm uninstall jmeter-next
+helm uninstall b3meter
 ```

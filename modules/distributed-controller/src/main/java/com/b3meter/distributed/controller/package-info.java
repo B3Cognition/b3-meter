@@ -5,4 +5,4 @@
  * across available worker nodes, and aggregates streamed {@code SampleResult}
  * messages from each worker into a unified result set.
  */
-package com.jmeternext.distributed.controller;
+package com.b3meter.distributed.controller;

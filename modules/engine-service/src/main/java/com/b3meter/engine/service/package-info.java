@@ -1,5 +1,5 @@
 /**
- * Engine-service: core API interfaces for jmeter-next.
+ * Engine-service: core API interfaces for b3meter.
  *
  * <p>This package defines the contract between the test engine and any consuming
  * layer (UI, REST API, distributed controller). No concrete implementations
@@ -11,6 +11,6 @@
  *   <li>{@code TestRunContext} — immutable context carrying run configuration</li>
  * </ul>
  *
- * @see <a href="https://github.com/jmeter-next/jmeter-next">jmeter-next</a>
+ * @see <a href="https://github.com/b3meter/b3meter">b3meter</a>
  */
-package com.jmeternext.engine.service;
+package com.b3meter.engine.service;

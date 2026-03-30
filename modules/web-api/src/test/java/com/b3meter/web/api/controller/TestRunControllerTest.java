@@ -1,11 +1,26 @@
-package com.jmeternext.web.api.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.controller;
 
-import com.jmeternext.web.api.controller.dto.CreatePlanRequest;
-import com.jmeternext.web.api.controller.dto.MetricsDto;
-import com.jmeternext.web.api.controller.dto.StartRunRequest;
-import com.jmeternext.web.api.controller.dto.TestPlanDto;
-import com.jmeternext.web.api.controller.dto.TestRunDto;
-import com.jmeternext.engine.service.TestRunContextRegistry;
+import com.b3meter.web.api.controller.dto.CreatePlanRequest;
+import com.b3meter.web.api.controller.dto.MetricsDto;
+import com.b3meter.web.api.controller.dto.StartRunRequest;
+import com.b3meter.web.api.controller.dto.TestPlanDto;
+import com.b3meter.web.api.controller.dto.TestRunDto;
+import com.b3meter.engine.service.TestRunContextRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +62,7 @@ class TestRunControllerTest {
     void startRun_validPlanId_returns202WithRunId() {
         String planId = createPlan("Run Test Plan");
 
-        StartRunRequest request = new StartRunRequest(planId, 1, 0L, null);
+        StartRunRequest request = new StartRunRequest(planId, 1, 0L, null, null, null, null, null);
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs", request, TestRunDto.class);
 
@@ -59,7 +74,7 @@ class TestRunControllerTest {
 
     @Test
     void startRun_blankPlanId_returns400() {
-        StartRunRequest request = new StartRunRequest("", 1, 0L, null);
+        StartRunRequest request = new StartRunRequest("", 1, 0L, null, null, null, null, null);
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs", request, TestRunDto.class);
 
@@ -68,7 +83,7 @@ class TestRunControllerTest {
 
     @Test
     void startRun_nullPlanId_returns400() {
-        StartRunRequest request = new StartRunRequest(null, null, null, null);
+        StartRunRequest request = new StartRunRequest(null, null, null, null, null, null, null, null);
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs", request, TestRunDto.class);
 
@@ -80,7 +95,7 @@ class TestRunControllerTest {
         String planId = createPlan("Defaults Plan");
 
         // null virtualUsers and durationSeconds should use defaults
-        StartRunRequest request = new StartRunRequest(planId, null, null, null);
+        StartRunRequest request = new StartRunRequest(planId, null, null, null, null, null, null, null);
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs", request, TestRunDto.class);
 
@@ -250,7 +265,7 @@ class TestRunControllerTest {
     private TestRunDto startRun(String planId) {
         ResponseEntity<TestRunDto> response = restTemplate.postForEntity(
                 "/api/v1/runs",
-                new StartRunRequest(planId, 1, 0L, null),
+                new StartRunRequest(planId, 1, 0L, null, null, null, null, null),
                 TestRunDto.class);
         assertNotNull(response.getBody(), "startRun helper: body must not be null");
         return response.getBody();

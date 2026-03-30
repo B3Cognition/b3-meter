@@ -1,21 +1,16 @@
-/**
- * Tests for DynamicForm component (T036 — BeanInfoSchemaExtractor + Auto-Generated Forms).
- *
- * Covers:
- *   - Renders string properties as text inputs
- *   - Renders integer properties as number inputs
- *   - Renders number properties as number inputs
- *   - Renders boolean properties as checkboxes
- *   - Renders enum properties as select elements with correct options
- *   - Populates initial values from the initialValues prop
- *   - Falls back to schema defaultValue when no initialValue is provided
- *   - Calls onSubmit with correctly typed values on valid submission
- *   - Renders displayName as the field label
- *   - Renders the Apply button
- *   - Form has correct aria-label
- *   - Multiple properties are all rendered
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { DynamicForm } from '../components/PropertyPanel/DynamicForm.js';

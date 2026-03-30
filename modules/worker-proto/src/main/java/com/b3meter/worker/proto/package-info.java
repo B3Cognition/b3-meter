@@ -5,4 +5,4 @@
  * from the {@code .proto} files in {@code src/main/proto/}. Do not edit
  * generated files by hand.
  */
-package com.jmeternext.worker.proto;
+package com.b3meter.worker.proto;

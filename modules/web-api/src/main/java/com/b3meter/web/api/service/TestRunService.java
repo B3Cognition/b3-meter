@@ -1,19 +1,34 @@
-package com.jmeternext.web.api.service;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.service;
 
-import com.jmeternext.engine.service.EngineService;
-import com.jmeternext.engine.service.SampleBucket;
-import com.jmeternext.engine.service.SampleBucketConsumer;
-import com.jmeternext.engine.service.SampleStreamBroker;
-import com.jmeternext.engine.service.TestRunContext;
-import com.jmeternext.engine.service.TestRunContextRegistry;
-import com.jmeternext.engine.service.TestRunHandle;
-import com.jmeternext.web.api.controller.dto.MetricsDto;
-import com.jmeternext.web.api.controller.dto.StartRunRequest;
-import com.jmeternext.web.api.controller.dto.TestRunDto;
-import com.jmeternext.web.api.metrics.LoadTestMetrics;
-import com.jmeternext.web.api.repository.TestPlanRepository;
-import com.jmeternext.web.api.repository.TestRunEntity;
-import com.jmeternext.web.api.repository.TestRunRepository;
+import com.b3meter.engine.service.EngineService;
+import com.b3meter.engine.service.SampleBucket;
+import com.b3meter.engine.service.SampleBucketConsumer;
+import com.b3meter.engine.service.SampleStreamBroker;
+import com.b3meter.engine.service.TestRunContext;
+import com.b3meter.engine.service.TestRunContextRegistry;
+import com.b3meter.engine.service.TestRunHandle;
+import com.b3meter.web.api.controller.dto.MetricsDto;
+import com.b3meter.web.api.controller.dto.StartRunRequest;
+import com.b3meter.web.api.controller.dto.TestRunDto;
+import com.b3meter.web.api.metrics.LoadTestMetrics;
+import com.b3meter.web.api.repository.TestPlanRepository;
+import com.b3meter.web.api.repository.TestRunEntity;
+import com.b3meter.web.api.repository.TestRunRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -54,7 +69,7 @@ public class TestRunService {
     private final TestPlanRepository testPlanRepository;
     private final SampleStreamBroker broker;
     private final EngineService engineService;
-    private final com.jmeternext.web.api.security.ResourceQuotaService quotaService;
+    private final com.b3meter.web.api.security.ResourceQuotaService quotaService;
     private final LoadTestMetrics loadTestMetrics;
 
     /**
@@ -72,13 +87,13 @@ public class TestRunService {
     /**
      * SLA evaluators keyed by runId — created when SLA thresholds are provided in the start request.
      */
-    private final ConcurrentHashMap<String, com.jmeternext.engine.service.SlaEvaluator> slaEvaluators = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, com.b3meter.engine.service.SlaEvaluator> slaEvaluators = new ConcurrentHashMap<>();
 
     public TestRunService(TestRunRepository runRepository,
                           TestPlanRepository testPlanRepository,
                           SampleStreamBroker broker,
                           EngineService engineService,
-                          com.jmeternext.web.api.security.ResourceQuotaService quotaService,
+                          com.b3meter.web.api.security.ResourceQuotaService quotaService,
                           LoadTestMetrics loadTestMetrics) {
         this.runRepository = runRepository;
         this.testPlanRepository = testPlanRepository;
@@ -132,7 +147,7 @@ public class TestRunService {
         var planOpt = testPlanRepository.findById(request.planId());
         if (planOpt.isEmpty()) {
             // Plan was created in the UI but never persisted — create a stub record
-            var stub = new com.jmeternext.web.api.repository.TestPlanEntity(
+            var stub = new com.b3meter.web.api.repository.TestPlanEntity(
                     request.planId(),
                     request.planId(),
                     DEFAULT_OWNER,
@@ -175,7 +190,7 @@ public class TestRunService {
         // Subscribe SLA evaluator if thresholds are provided
         if (request.slaP95Ms() != null || request.slaP99Ms() != null
                 || request.slaAvgMs() != null || request.slaMaxErrorPercent() != null) {
-            var sla = new com.jmeternext.engine.service.SlaEvaluator(
+            var sla = new com.b3meter.engine.service.SlaEvaluator(
                     request.slaP95Ms() != null ? request.slaP95Ms() : 0,
                     request.slaP99Ms() != null ? request.slaP99Ms() : 0,
                     request.slaAvgMs() != null ? request.slaAvgMs() : 0,
@@ -304,7 +319,7 @@ public class TestRunService {
     // SLA
     // -------------------------------------------------------------------------
 
-    public Optional<com.jmeternext.engine.service.SlaEvaluator.SlaStatus> getSlaStatus(String runId) {
+    public Optional<com.b3meter.engine.service.SlaEvaluator.SlaStatus> getSlaStatus(String runId) {
         var evaluator = slaEvaluators.get(runId);
         if (evaluator == null) return Optional.empty();
         return Optional.of(evaluator.getStatus());

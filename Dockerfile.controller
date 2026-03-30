@@ -1,5 +1,10 @@
 FROM eclipse-temurin:21-jre-alpine
+LABEL org.opencontainers.image.title="b3meter-controller"
+LABEL org.opencontainers.image.description="b3meter controller — load testing platform"
+LABEL org.opencontainers.image.source="https://github.com/b3-cognition/b3-meter"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
 WORKDIR /app
 COPY modules/web-api/build/libs/*.jar app.jar
+COPY --chown=root:root build/reports/licenses/THIRD-PARTY-LICENSES.txt /opt/app/THIRD-PARTY-LICENSES.txt
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

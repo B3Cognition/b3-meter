@@ -1,15 +1,16 @@
-/**
- * useRunStream — React hook that opens an SSE connection to a run's event stream
- * and feeds MetricsBucket data into runStore.
- *
- * Features:
- * - Connects to /api/v1/stream/{runId}
- * - Parses incoming SSE data as MetricsBucket and calls runStore.addSample()
- * - Reconnects on error with exponential backoff: 1s, 2s, 4s, … capped at 30s
- * - Sends Last-Event-ID header on reconnect (via EventSource's built-in support)
- * - Cleans up EventSource on component unmount
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useEffect, useRef } from 'react';
 import { useRunStore } from '../store/runStore.js';
 import type { MetricsBucket } from '../types/sse-events.js';

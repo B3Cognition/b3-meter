@@ -1,19 +1,16 @@
-/**
- * DynamicForm — renders a React Hook Form backed form from a ComponentSchema
- * received from the backend API (GET /api/v1/schemas/{componentName}).
- *
- * Design contract (T036 — MAVERICK Alternative 3):
- *   - The form is driven entirely by the schema; no hard-coded field list.
- *   - Hand-coded forms in the schema registry (T024) take priority.
- *     PropertyPanel checks the registry first and falls back to DynamicForm
- *     only when no hand-coded schema exists for the component type.
- *   - String  → <input type="text">
- *   - integer → <input type="number">
- *   - number  → <input type="number">
- *   - boolean → <input type="checkbox">
- *   - enum    → <select> with enumValues as <option> elements
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useForm } from 'react-hook-form';
 import './PropertyPanel.css';
 

@@ -1,4 +1,19 @@
-package com.jmeternext.engine.adapter.util;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.util;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -125,7 +140,7 @@ class LegacyPropertyBridgeTest {
     void newKeyForTranslatesKnownLegacyKey() {
         LegacyPropertyBridge bridge = LegacyPropertyBridge.fromProperties(new Properties());
         assertEquals(
-                "com.jmeternext.sampler.output.format",
+                "com.b3meter.sampler.output.format",
                 bridge.newKeyFor("jmeter.save.saveservice.output_format"));
     }
 
@@ -179,7 +194,7 @@ class LegacyPropertyBridgeTest {
     void savserviceTimeMapsToElapsedMs() {
         LegacyPropertyBridge bridge = LegacyPropertyBridge.fromProperties(new Properties());
         assertEquals(
-                "com.jmeternext.sampler.save.elapsed_ms",
+                "com.b3meter.sampler.save.elapsed_ms",
                 bridge.newKeyFor("jmeter.save.saveservice.time"));
     }
 
@@ -187,7 +202,7 @@ class LegacyPropertyBridgeTest {
     void httpConnectTimeoutMapsCorrectly() {
         LegacyPropertyBridge bridge = LegacyPropertyBridge.fromProperties(new Properties());
         assertEquals(
-                "com.jmeternext.http.connect_timeout_ms",
+                "com.b3meter.http.connect_timeout_ms",
                 bridge.newKeyFor("HTTPSampler.connect_timeout"));
     }
 
@@ -195,7 +210,7 @@ class LegacyPropertyBridgeTest {
     void reportGeneratorTitleMapsCorrectly() {
         LegacyPropertyBridge bridge = LegacyPropertyBridge.fromProperties(new Properties());
         assertEquals(
-                "com.jmeternext.report.title",
+                "com.b3meter.report.title",
                 bridge.newKeyFor("jmeter.reportgenerator.report_title"));
     }
 }

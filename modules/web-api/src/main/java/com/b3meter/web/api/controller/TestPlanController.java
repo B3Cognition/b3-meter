@@ -1,10 +1,25 @@
-package com.jmeternext.web.api.controller;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.web.api.controller;
 
-import com.jmeternext.web.api.controller.dto.CreatePlanRequest;
-import com.jmeternext.web.api.controller.dto.TestPlanDto;
-import com.jmeternext.web.api.controller.dto.TestPlanRevisionDto;
-import com.jmeternext.web.api.controller.dto.UpdatePlanRequest;
-import com.jmeternext.web.api.service.TestPlanService;
+import com.b3meter.web.api.controller.dto.CreatePlanRequest;
+import com.b3meter.web.api.controller.dto.TestPlanDto;
+import com.b3meter.web.api.controller.dto.TestPlanRevisionDto;
+import com.b3meter.web.api.controller.dto.UpdatePlanRequest;
+import com.b3meter.web.api.service.TestPlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,7 +49,7 @@ import java.util.List;
  * REST controller for test plan CRUD, JMX import/export, and revision management.
  *
  * <p>All endpoints are under {@code /api/v1/plans}. Security is handled globally
- * by {@link com.jmeternext.web.api.config.SecurityConfig} — all requests are
+ * by {@link com.b3meter.web.api.config.SecurityConfig} — all requests are
  * permitted in single-user desktop mode.
  */
 @RestController

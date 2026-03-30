@@ -1,6 +1,6 @@
 apiVersion: v2
-name: jmeter-next
-description: Modern web-based load testing tool — distributed mode
+name: b3meter
+description: b3meter — modern load testing platform, distributed mode
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

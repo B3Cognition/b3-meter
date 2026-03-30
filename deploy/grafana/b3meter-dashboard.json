@@ -12,7 +12,7 @@
   "annotations": {
     "list": []
   },
-  "description": "JMeter Next - Load Test Observability Dashboard",
+  "description": "b3meter - Load Test Observability Dashboard",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
@@ -42,7 +42,7 @@
       },
       "targets": [
         {
-          "expr": "jmeter_active_runs{application=\"jmeter-next\"}",
+          "expr": "jmeter_active_runs{application=\"b3meter\"}",
           "legendFormat": "Active Runs",
           "refId": "A"
         }
@@ -67,7 +67,7 @@
       },
       "targets": [
         {
-          "expr": "jmeter_samples_total{application=\"jmeter-next\"}",
+          "expr": "jmeter_samples_total{application=\"b3meter\"}",
           "legendFormat": "Total Samples",
           "refId": "A"
         }
@@ -91,22 +91,22 @@
       },
       "targets": [
         {
-          "expr": "jmeter_response_time_seconds{application=\"jmeter-next\", quantile=\"0.5\"}",
+          "expr": "jmeter_response_time_seconds{application=\"b3meter\", quantile=\"0.5\"}",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "jmeter_response_time_seconds{application=\"jmeter-next\", quantile=\"0.9\"}",
+          "expr": "jmeter_response_time_seconds{application=\"b3meter\", quantile=\"0.9\"}",
           "legendFormat": "p90",
           "refId": "B"
         },
         {
-          "expr": "jmeter_response_time_seconds{application=\"jmeter-next\", quantile=\"0.95\"}",
+          "expr": "jmeter_response_time_seconds{application=\"b3meter\", quantile=\"0.95\"}",
           "legendFormat": "p95",
           "refId": "C"
         },
         {
-          "expr": "jmeter_response_time_seconds{application=\"jmeter-next\", quantile=\"0.99\"}",
+          "expr": "jmeter_response_time_seconds{application=\"b3meter\", quantile=\"0.99\"}",
           "legendFormat": "p99",
           "refId": "D"
         }
@@ -133,7 +133,7 @@
       },
       "targets": [
         {
-          "expr": "rate(jmeter_errors_total{application=\"jmeter-next\"}[1m]) / (rate(jmeter_samples_total{application=\"jmeter-next\"}[1m]) > 0)",
+          "expr": "rate(jmeter_errors_total{application=\"b3meter\"}[1m]) / (rate(jmeter_samples_total{application=\"b3meter\"}[1m]) > 0)",
           "legendFormat": "Error Rate",
           "refId": "A"
         }
@@ -157,17 +157,17 @@
       },
       "targets": [
         {
-          "expr": "jvm_memory_used_bytes{application=\"jmeter-next\", area=\"heap\"}",
+          "expr": "jvm_memory_used_bytes{application=\"b3meter\", area=\"heap\"}",
           "legendFormat": "Heap Used - {{id}}",
           "refId": "A"
         },
         {
-          "expr": "jvm_memory_committed_bytes{application=\"jmeter-next\", area=\"heap\"}",
+          "expr": "jvm_memory_committed_bytes{application=\"b3meter\", area=\"heap\"}",
           "legendFormat": "Heap Committed - {{id}}",
           "refId": "B"
         },
         {
-          "expr": "jvm_memory_max_bytes{application=\"jmeter-next\", area=\"heap\"}",
+          "expr": "jvm_memory_max_bytes{application=\"b3meter\", area=\"heap\"}",
           "legendFormat": "Heap Max - {{id}}",
           "refId": "C"
         }
@@ -190,7 +190,7 @@
       },
       "targets": [
         {
-          "expr": "rate(http_server_requests_seconds_count{application=\"jmeter-next\"}[1m])",
+          "expr": "rate(http_server_requests_seconds_count{application=\"b3meter\"}[1m])",
           "legendFormat": "{{method}} {{uri}} ({{status}})",
           "refId": "A"
         }
@@ -219,7 +219,7 @@
       },
       "targets": [
         {
-          "expr": "jmeter_active_workers{application=\"jmeter-next\"}",
+          "expr": "jmeter_active_workers{application=\"b3meter\"}",
           "legendFormat": "Active Workers",
           "refId": "A"
         }
@@ -243,7 +243,7 @@
       },
       "targets": [
         {
-          "expr": "rate(jmeter_samples_total{application=\"jmeter-next\"}[1m])",
+          "expr": "rate(jmeter_samples_total{application=\"b3meter\"}[1m])",
           "legendFormat": "Samples/sec",
           "refId": "A"
         }
@@ -268,7 +268,7 @@
       },
       "targets": [
         {
-          "expr": "jmeter_runs_total{application=\"jmeter-next\"}",
+          "expr": "jmeter_runs_total{application=\"b3meter\"}",
           "legendFormat": "Total Runs",
           "refId": "A"
         }
@@ -288,7 +288,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "JMeter Next - Load Test Dashboard",
-  "uid": "jmeter-next-overview",
+  "title": "b3meter - Load Test Dashboard",
+  "uid": "b3meter-overview",
   "version": 1
 }

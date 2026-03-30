@@ -34,7 +34,7 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=production,kubernetes`
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `spring.application.name` | `jmeter-next` | Application name (used in metrics tags) |
+| `spring.application.name` | `b3meter` | Application name (used in metrics tags) |
 | `spring.threads.virtual.enabled` | `true` | Enables Project Loom virtual threads |
 | `spring.servlet.multipart.max-file-size` | `50MB` | Max upload file size (JMX plans) |
 | `spring.servlet.multipart.max-request-size` | `50MB` | Max total request size |
@@ -49,7 +49,7 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=production,kubernetes`
 | `management.endpoint.health.probes.enabled` | `true` | Enables `/actuator/health/liveness` and `/actuator/health/readiness` |
 | `management.health.livenessState.enabled` | `true` | Exposes Kubernetes liveness probe |
 | `management.health.readinessState.enabled` | `true` | Exposes Kubernetes readiness probe |
-| `management.metrics.tags.application` | `jmeter-next` | Global tag applied to all Prometheus metrics |
+| `management.metrics.tags.application` | `b3meter` | Global tag applied to all Prometheus metrics |
 
 ### JMeter
 
@@ -84,7 +84,7 @@ Profiles can be combined: `SPRING_PROFILES_ACTIVE=production,kubernetes`
 
 ## Kubernetes Deployment
 
-The Helm chart at `deploy/helm/jmeter-next/` configures:
+The Helm chart at `deploy/helm/b3meter/` configures:
 - Liveness probe: `GET /actuator/health/liveness` (initialDelay: 30s, period: 10s)
 - Readiness probe: `GET /actuator/health/readiness` (initialDelay: 15s, period: 10s)
 - Spring profile: `kubernetes` (set via `SPRING_PROFILES_ACTIVE` env var)

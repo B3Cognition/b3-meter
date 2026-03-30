@@ -1,10 +1,25 @@
-package com.jmeternext.engine.adapter.cli;
+/*
+ * Copyright 2024-2026 b3meter Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b3meter.engine.adapter.cli;
 
-import com.jmeternext.engine.adapter.EngineServiceImpl;
-import com.jmeternext.engine.adapter.InMemorySampleStreamBroker;
-import com.jmeternext.engine.service.EngineService;
-import com.jmeternext.engine.service.TestRunContext;
-import com.jmeternext.engine.service.TestRunHandle;
+import com.b3meter.engine.adapter.EngineServiceImpl;
+import com.b3meter.engine.adapter.InMemorySampleStreamBroker;
+import com.b3meter.engine.service.EngineService;
+import com.b3meter.engine.service.TestRunContext;
+import com.b3meter.engine.service.TestRunHandle;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -24,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * CLI entry point for headless jmeter-next test execution.
+ * CLI entry point for headless b3meter test execution.
  *
  * <p>Preserves JMeter CLI flag compatibility:
  * <ul>
@@ -47,7 +62,7 @@ import java.util.logging.Logger;
  * <p>The {@link EngineService} is injected via the constructor to keep this class
  * testable without a real JMeter engine.
  */
-public final class JMeterNextCli {
+public final class B3MeterCli {
 
     /** Exit code: run completed successfully. */
     public static final int EXIT_OK = 0;
@@ -58,7 +73,7 @@ public final class JMeterNextCli {
     /** Exit code: configuration or validation error. */
     public static final int EXIT_CONFIG_ERROR = 2;
 
-    private static final Logger LOG = Logger.getLogger(JMeterNextCli.class.getName());
+    private static final Logger LOG = Logger.getLogger(B3MeterCli.class.getName());
 
     private final EngineService engineService;
     private final PrintWriter out;
@@ -69,7 +84,7 @@ public final class JMeterNextCli {
      *
      * @param engineService engine to delegate test execution to; must not be {@code null}
      */
-    public JMeterNextCli(EngineService engineService) {
+    public B3MeterCli(EngineService engineService) {
         this(engineService, new PrintWriter(System.out, true), new PrintWriter(System.err, true));
     }
 
@@ -83,7 +98,7 @@ public final class JMeterNextCli {
      * @param out           writer for standard output; must not be {@code null}
      * @param err           writer for error output; must not be {@code null}
      */
-    public JMeterNextCli(EngineService engineService, PrintWriter out, PrintWriter err) {
+    public B3MeterCli(EngineService engineService, PrintWriter out, PrintWriter err) {
         this.engineService = Objects.requireNonNull(engineService, "engineService must not be null");
         this.out = Objects.requireNonNull(out, "out must not be null");
         this.err = Objects.requireNonNull(err, "err must not be null");
@@ -92,7 +107,7 @@ public final class JMeterNextCli {
     /**
      * Main entry point for the CLI.
      *
-     * <p>Creates a {@link JMeterNextCli} with a no-op {@link EngineService} stub.
+     * <p>Creates a {@link B3MeterCli} with a no-op {@link EngineService} stub.
      * The real implementation is wired when {@code EngineServiceImpl} is ready (T014).
      *
      * @param args command-line arguments
@@ -100,10 +115,10 @@ public final class JMeterNextCli {
     public static void main(String[] args) {
         EngineService engineService = new EngineServiceImpl(
                 new InMemorySampleStreamBroker(),
-                new com.jmeternext.engine.adapter.http.Hc5HttpClientFactory(),
-                com.jmeternext.engine.adapter.NoOpUIBridge.INSTANCE
+                new com.b3meter.engine.adapter.http.Hc5HttpClientFactory(),
+                com.b3meter.engine.adapter.NoOpUIBridge.INSTANCE
         );
-        System.exit(new JMeterNextCli(engineService).run(args));
+        System.exit(new B3MeterCli(engineService).run(args));
     }
 
     /**
@@ -198,7 +213,7 @@ public final class JMeterNextCli {
         if (options.resultsLog != null) {
             jtlFilePath = options.resultsLog.getAbsolutePath();
             try {
-                com.jmeternext.engine.service.interpreter.SimpleDataWriterExecutor.open(jtlFilePath);
+                com.b3meter.engine.service.interpreter.SimpleDataWriterExecutor.open(jtlFilePath);
                 out.println("JTL output: " + options.resultsLog.getName());
             } catch (IOException e) {
                 err.println("ERROR: Failed to open JTL file: " + e.getMessage());
@@ -252,7 +267,7 @@ public final class JMeterNextCli {
         } finally {
             // Close JTL writer if one was opened
             if (jtlFilePath != null) {
-                com.jmeternext.engine.service.interpreter.SimpleDataWriterExecutor.close(jtlFilePath);
+                com.b3meter.engine.service.interpreter.SimpleDataWriterExecutor.close(jtlFilePath);
             }
         }
     }
@@ -275,7 +290,7 @@ public final class JMeterNextCli {
         }
 
         try {
-            com.jmeternext.engine.adapter.report.HtmlReportGenerator.generate(
+            com.b3meter.engine.adapter.report.HtmlReportGenerator.generate(
                     jtlFile.toPath(), reportDir.toPath());
             out.println("Report generated: " + reportDir.getAbsolutePath());
             return EXIT_OK;
@@ -291,7 +306,7 @@ public final class JMeterNextCli {
             reportDir = new File(new File(jtlFilePath).getParentFile(), "report");
         }
         try {
-            com.jmeternext.engine.adapter.report.HtmlReportGenerator.generate(
+            com.b3meter.engine.adapter.report.HtmlReportGenerator.generate(
                     java.nio.file.Path.of(jtlFilePath), reportDir.toPath());
             out.println("Report generated: " + reportDir.getAbsolutePath());
         } catch (Exception e) {
@@ -326,13 +341,13 @@ public final class JMeterNextCli {
      * Picocli-annotated command options model.
      *
      * <p>Declared as a static inner class so it can be constructed directly in tests
-     * without instantiating a full {@link JMeterNextCli}.
+     * without instantiating a full {@link B3MeterCli}.
      */
     @Command(
-            name = "jmeter-next",
+            name = "b3meter",
             mixinStandardHelpOptions = true,
-            description = "jmeter-next headless test runner — JMeter CLI compatible",
-            version = "jmeter-next 1.0.0-SNAPSHOT"
+            description = "b3meter headless test runner — compatible with Apache JMeter JMX test plan format",
+            version = "b3meter 1.0.0-SNAPSHOT"
     )
     static final class CliOptions implements Runnable {
 
@@ -366,7 +381,7 @@ public final class JMeterNextCli {
 
         @Override
         public void run() {
-            // Execution is delegated to JMeterNextCli.execute(); this method is intentionally empty.
+            // Execution is delegated to B3MeterCli.execute(); this method is intentionally empty.
         }
     }
 
@@ -385,9 +400,9 @@ public final class JMeterNextCli {
         @Override
         public TestRunHandle startRun(String planId, Map<String, Object> treeData, Properties overrides) {
             String runId = UUID.randomUUID().toString();
-            java.util.concurrent.CompletableFuture<com.jmeternext.engine.service.TestRunResult> future =
+            java.util.concurrent.CompletableFuture<com.b3meter.engine.service.TestRunResult> future =
                     java.util.concurrent.CompletableFuture.completedFuture(
-                            new com.jmeternext.engine.service.TestRunResult(
+                            new com.b3meter.engine.service.TestRunResult(
                                     runId,
                                     TestRunContext.TestRunStatus.STOPPED,
                                     java.time.Instant.now(),

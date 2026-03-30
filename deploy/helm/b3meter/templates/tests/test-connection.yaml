@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "jmeter-next.fullname" . }}-test-connection"
+  name: "{{ include "b3meter.fullname" . }}-test-connection"
   labels:
-    {{- include "jmeter-next.labels" . | nindent 4 }}
+    {{- include "b3meter.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -15,10 +15,10 @@ spec:
       args:
         - |
           echo "Testing controller health endpoint..."
-          wget -qO- --timeout=10 http://{{ include "jmeter-next.controller.fullname" . }}:{{ .Values.controller.service.httpPort }}/actuator/health
+          wget -qO- --timeout=10 http://{{ include "b3meter.controller.fullname" . }}:{{ .Values.controller.service.httpPort }}/actuator/health
           echo ""
           echo "Testing controller API endpoint..."
-          wget -qO- --timeout=10 http://{{ include "jmeter-next.controller.fullname" . }}:{{ .Values.controller.service.httpPort }}/api/v1/plans
+          wget -qO- --timeout=10 http://{{ include "b3meter.controller.fullname" . }}:{{ .Values.controller.service.httpPort }}/api/v1/plans
           echo ""
           echo "All tests passed."
   restartPolicy: Never

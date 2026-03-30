@@ -71,7 +71,7 @@ services:
       timeout: 3s
       retries: 5
 
-  jmeter-next:
+  b3meter:
     build: .
     ports:
       - "8080:8080"

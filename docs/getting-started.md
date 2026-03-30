@@ -1,4 +1,4 @@
-# Getting Started with jMeter Next
+# Getting Started with b3meter
 
 A step-by-step tutorial for first-time users. By the end you will have created,
 executed, and inspected a test plan.
@@ -51,7 +51,7 @@ You can also export back to `.jmx` via **Export** for round-trip compatibility.
 
 ## 5. Self Smoke Testing
 
-jMeter Next ships with built-in mock servers to verify every protocol works:
+b3meter ships with built-in mock servers to verify every protocol works:
 
 1. Click **Self Smoke** in the toolbar.
 2. Click **Start All** to launch mock HTTP, HTTPS, WebSocket, gRPC, GraphQL,
@@ -75,10 +75,10 @@ For production deployments, use the controller/worker CLI:
 
 ```bash
 # On the controller machine:
-java -jar jmeter-next.jar controller --port 8080
+java -jar b3-meter.jar controller --port 8080
 
 # On each worker machine:
-java -jar jmeter-next.jar worker --controller http://controller:8080
+java -jar b3-meter.jar worker --controller http://controller:8080
 ```
 
 ## Next Steps

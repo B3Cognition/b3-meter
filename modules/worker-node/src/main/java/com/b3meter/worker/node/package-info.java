@@ -5,4 +5,4 @@
  * controller, executes the plan fragment via the engine-adapter, and streams
  * {@code SampleResult} messages back to the controller over gRPC.
  */
-package com.jmeternext.worker.node;
+package com.b3meter.worker.node;

@@ -1,16 +1,16 @@
-/**
- * ChaosLoad — Chaos + Load Fusion panel.
- *
- * Configures chaos engineering parameters that are injected into load tests:
- *   - Latency injection (random delay for X% of requests)
- *   - Error injection (5xx responses for X% of requests)
- *   - Connection drops (kill X% of connections mid-request)
- *   - Network partition (pause all traffic for N seconds at time T)
- *
- * Configuration is stored and included in the run request. Results display
- * the active chaos config alongside performance metrics.
- */
-
+// Copyright 2024-2026 b3meter Contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { useState, useCallback } from 'react';
 import { Zap, Save, RotateCcw } from 'lucide-react';
 import { useLogStore } from '../../store/logStore.js';
@@ -54,7 +54,7 @@ export function ChaosLoad() {
   const [config, setConfig] = useState<ChaosConfig>(() => {
     // Try to load from localStorage
     try {
-      const saved = localStorage.getItem('jmeter-next-chaos-config');
+      const saved = localStorage.getItem('b3meter-chaos-config');
       if (saved) return JSON.parse(saved);
     } catch { /* ignore */ }
     return { ...DEFAULT_CONFIG };
@@ -97,7 +97,7 @@ export function ChaosLoad() {
   const handleSave = useCallback(() => {
     _savedChaosConfig = config;
     try {
-      localStorage.setItem('jmeter-next-chaos-config', JSON.stringify(config));
+      localStorage.setItem('b3meter-chaos-config', JSON.stringify(config));
     } catch { /* ignore */ }
     setSaved(true);
 
@@ -113,7 +113,7 @@ export function ChaosLoad() {
   const handleReset = useCallback(() => {
     setConfig({ ...DEFAULT_CONFIG });
     _savedChaosConfig = null;
-    try { localStorage.removeItem('jmeter-next-chaos-config'); } catch { /* ignore */ }
+    try { localStorage.removeItem('b3meter-chaos-config'); } catch { /* ignore */ }
     setSaved(false);
     addLog('INFO', 'Chaos config reset to defaults');
   }, [addLog]);
