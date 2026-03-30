@@ -1,217 +1,131 @@
 # b3meter
 
-> A simple, portable, fork-friendly load testing platform for the cloud era.
+**Modern load testing platform — compatible with Apache JMeter JMX test plans.**
 
-![License](https://img.shields.io/badge/license-Apache%202.0-blue)
-![Java](https://img.shields.io/badge/java-21-orange)
-![React](https://img.shields.io/badge/react-19-61DAFB)
-
-## What is this?
-
-b3meter is a modern load testing platform. It's designed to be:
-
-- **Simple** — clone, build, run. No database, no Terraform, no cloud account needed.
-- **Portable** — runs on your laptop, Docker, or Kubernetes. Fork it and add your own stuff.
-- **Powerful** — 27 protocol samplers, arrival-rate executors, load shapes, distributed mode with accurate percentiles.
-
-Supports Apache JMeter JMX test plan format. _Apache JMeter is a trademark of the Apache Software Foundation._
+[![CI](https://github.com/B3Cognition/b3-meter/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/B3Cognition/b3-meter/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/java-21-orange.svg)](https://adoptium.net/)
+[![React](https://img.shields.io/badge/react-19-61DAFB.svg)](https://react.dev/)
+[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](https://github.com/B3Cognition/b3-meter/releases)
 
 ---
 
-## Step-by-Step: Get Running in 5 Minutes
+b3meter is a drop-in replacement for Apache JMeter — not a wrapper around it. It reads `.jmx` test plans directly and executes them through a ground-up engine built on Java 21 virtual threads. You get a React 19 web UI, 27 built-in protocol samplers, arrival-rate execution models, distributed mode with accurate HDR histogram merging, and four metrics backends — all with zero framework dependencies in the core engine.
 
-### Step 1: Check Prerequisites
+---
 
-You need Java 21 and Node.js 20. Check if you have them:
+## Features
+
+### Protocol Samplers (27 built-in)
+
+| Category | Samplers |
+|----------|----------|
+| HTTP | HTTP/HTTPS (HC4 + HC5), AJP, SOAP |
+| Realtime | WebSocket, SSE, gRPC, MQTT |
+| Streaming | HLS, DASH, WebRTC |
+| Data | JDBC, FTP, LDAP, SMTP, TCP |
+| Scripting | JSR223 (Groovy/JS/Python), BeanShell |
+| Other | JUnit, OS Process, Debug, Mail Reader, Access Log |
+
+### Execution Models & Load Shapes
+
+| Execution Model | Description |
+|----------------|-------------|
+| Constant VUs | Fixed N virtual users looping for a duration |
+| Arrival Rate | Fixed iterations/sec — VU pool auto-scales |
+| Ramping Arrival Rate | Rate changes across stages with linear interpolation |
+
+Load shapes: **Constant · Ramp · Stages · Step · Sinusoidal · Composite**
+
+### Metrics Backends
+
+| Backend | Notes |
+|---------|-------|
+| CSV | JTL-compatible, configurable delimiter |
+| JSON | NDJSON, one object per sample bucket |
+| InfluxDB | Line protocol, v1 and v2 (Bearer token) |
+| Prometheus | Pull endpoint on `:9270` |
+
+### Distributed Mode
+
+- gRPC primary transport, WebSocket fallback
+- **DIVIDE** mode (500 VUs / 5 workers = 100 each) or **MULTIPLY** (500 VUs × 5 workers)
+- Coordinated start — all workers fire simultaneously
+- HDR histogram merge — accurate percentiles across workers, no averaging
+- Circuit breaker + health polling + auto-reconnect
+
+### Other
+
+- React 19 web UI: plan editor, live charts, 24 themes
+- JWT + RBAC, SSRF protection, XStream deserialization allowlist
+- SLA evaluation + coordinated omission detection
+- HTML report generation
+- Spring Boot 3.x REST API with OpenAPI/Swagger docs
+- 11 protocol mock servers for self-smoke testing
+
+---
+
+## Quick Start
+
+**Prerequisites:** Java 21 (`brew install openjdk@21` / `apt install openjdk-21-jdk`), Node.js 20 (`brew install node@20`)
 
 ```bash
-java -version    # needs 21 or higher
-node -version    # needs 20 or higher
-```
+# 1. Clone
+git clone https://github.com/B3Cognition/b3-meter.git && cd b3-meter
 
-**Don't have Java 21?** Install it:
-```bash
-# macOS
-brew install openjdk@21
-
-# Ubuntu/Debian
-sudo apt install openjdk-21-jdk
-
-# Windows — download from https://adoptium.net/
-```
-
-**Don't have Node.js 20?** Install it:
-```bash
-# macOS
-brew install node@20
-
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install nodejs
-```
-
-### Step 2: Clone the Repo
-
-```bash
-git clone https://github.com/b3-cognition/b3-meter.git
-cd b3-meter
-```
-
-### Step 3: Start the Backend
-
-```bash
+# 2. Start the backend
 ./gradlew :modules:web-api:bootRun
+# → API running at http://localhost:8080
+
+# 3. Start the frontend (new terminal)
+cd web-ui && npm install && npm run dev
+# → UI running at http://localhost:3000
+
+# 4. Open http://localhost:3000, create a test plan, click Run
 ```
 
-Wait until you see: `Started WebApiApplication in X seconds`
-
-The API is now running at **http://localhost:8080**
-
-### Step 4: Start the Frontend (new terminal)
-
-```bash
-cd web-ui
-npm install
-npm run dev
-```
-
-Open **http://localhost:3000** in your browser.
-
-### Step 5: Run Your First Test
-
-1. In the browser UI, create a new test plan
-2. Add an HTTP Sampler pointing to any URL (e.g., `https://httpbin.org/get`)
-3. Set thread count to 10 and duration to 30 seconds
-4. Click **Run**
-5. Watch real-time charts update live
-
-**That's it. You're load testing.**
+API docs available at **http://localhost:8080/swagger-ui.html** once the backend is up.
 
 ---
 
-## Run from Command Line (No UI)
+## CLI (Headless Mode)
 
 ```bash
-# Run a JMX test plan in headless mode
-./gradlew :modules:engine-adapter:run --args="--plan test-plans/http-smoke.jmx --non-gui --duration 30"
+./gradlew :modules:engine-adapter:run \
+  --args="--plan test-plans/http-smoke.jmx --non-gui --duration 30"
 ```
 
 ---
 
-## Run with Docker
-
-### Single Node
+## Docker
 
 ```bash
+# Single node
 docker build -f Dockerfile.controller -t b3meter .
 docker run -p 8080:8080 b3meter
-```
 
-### Distributed Mode (1 Controller + 3 Workers)
-
-```bash
+# Distributed: 1 controller + 3 workers
 docker compose -f docker-compose.distributed.yml up
-```
 
-This gives you 3 workers coordinated by 1 controller. Workers share the load equally (DIVIDE mode — 300 VUs total = 100 per worker).
-
-### With Mock Servers (for testing the tool itself)
-
-```bash
+# Self-smoke: 11 protocol mock servers
 docker compose -f docker-compose.test.yml up
 ```
 
-Starts 11 protocol mock servers (HTTP, WebSocket, SSE, HLS, MQTT, gRPC, DASH, WebRTC, FTP, LDAP, STUN) with health checks.
-
 ---
 
-## Run on Kubernetes
+## Kubernetes
 
 ```bash
-helm install b3meter ./deploy/helm/b3meter \
-  --set worker.replicaCount=5
-```
+helm install b3meter ./deploy/helm/b3meter --set worker.replicaCount=5
 
-That's it. The Helm chart creates a controller + 5 workers. No persistent storage required by default.
-
-To enable persistent storage (keeps test plans across pod restarts):
-```bash
+# With persistent storage
 helm install b3meter ./deploy/helm/b3meter \
   --set worker.replicaCount=5 \
   --set persistence.enabled=true \
   --set persistence.storageClass=gp3
 ```
 
----
-
-## Features at a Glance
-
-### 27 Protocol Samplers (Built-in, No Plugins Needed)
-
-| Protocol | Description |
-|----------|-------------|
-| HTTP/HTTPS | Full HTTP client with connection pooling |
-| WebSocket | Persistent connections, message send/receive |
-| SSE | Server-Sent Events consumer |
-| gRPC | HTTP/2 with protobuf framing |
-| MQTT | Pub/sub with QoS levels |
-| HLS | M3U8 playlist + segment download |
-| DASH | MPEG-DASH streaming |
-| WebRTC | Signaling + ICE/STUN |
-| FTP | File upload/download |
-| LDAP | Directory queries |
-| **JDBC** | SQL database queries (5 query types, connection pool) |
-| SMTP | Email sending |
-| TCP | Raw socket |
-| JSR223 | Groovy/JS/Python scripting |
-| BeanShell | Legacy scripting |
-| JUnit | Run JUnit tests as samplers |
-| OS Process | Shell commands |
-| Debug | Variable dump |
-
-### Execution Models
-
-| Model | Description |
-|-------|-------------|
-| **Constant VUs** | Fixed N virtual users looping for a duration (classic JMeter) |
-| **Arrival Rate** | Fixed iterations/second — VU pool auto-scales to maintain rate |
-| **Ramping Arrival Rate** | Rate changes across stages with linear interpolation |
-
-### Load Shapes
-
-| Shape | Description |
-|-------|-------------|
-| Constant | Fixed users for a duration |
-| Ramp | Linear ramp up/down |
-| Stages | Multi-stage with transitions |
-| Step | Staircase pattern |
-| Sinusoidal | Wave oscillation |
-| Composite | Chain multiple shapes |
-
-### Metrics Export (4 Backends)
-
-| Backend | Config |
-|---------|--------|
-| **CSV** | JTL-compatible, configurable delimiter |
-| **JSON** | NDJSON, one object per sample bucket |
-| **InfluxDB** | Line protocol, supports v1 and v2 (Bearer token) |
-| **Prometheus** | Pull endpoint on port 9270 |
-
-### Distributed Mode
-
-- **gRPC** primary transport with **WebSocket** fallback
-- **DIVIDE mode** (default): 500 VUs / 5 workers = 100 each
-- **Coordinated start**: all workers fire simultaneously
-- **HDR Histogram merge**: accurate percentiles across workers (no averaging)
-- **Circuit breaker** + health polling + auto-reconnect
-
-### Security
-
-- JWT authentication + RBAC
-- SSRF protection (blocks RFC-1918, loopback, link-local)
-- XStream security policy (JMX deserialization allowlist)
-- Rate limiting on auth endpoints
-- Resource ownership (users can only access their own runs)
+A Grafana dashboard JSON is included at `deploy/grafana/b3meter-dashboard.json`.
 
 ---
 
@@ -241,80 +155,52 @@ helm install b3meter ./deploy/helm/b3meter \
 └─────────────────────────────────────────────────┘
 ```
 
-The **engine-service** module has **zero framework dependencies** — pure JDK 21 types only. This means it can be embedded in any Java application, tested without Spring, and potentially compiled with GraalVM native-image.
-
----
-
-## API Documentation
-
-After starting the backend:
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/v3/api-docs
-- **Mock Server Status**: http://localhost:8080/api/v1/mocks/status
+`engine-service` has **zero framework dependencies** — pure JDK 21. It can be embedded in any Java application, tested without Spring, and is a candidate for GraalVM native-image compilation.
 
 ---
 
 ## Project Structure
 
 ```
-
-├── modules/
-│   ├── engine-service/          # Core engine (0 dependencies, pure JDK)
-│   ├── engine-adapter/          # CLI + JMX parser + HTTP client
-│   ├── web-api/                 # Spring Boot REST API
-│   ├── web-ui/                  # React 19 frontend
-│   ├── distributed-controller/  # gRPC controller
-│   ├── worker-node/             # gRPC worker
-│   └── worker-proto/            # Protobuf definitions
-├── test-servers/                # 11 protocol mock servers (Node.js)
-├── test-plans/                  # Sample JMX test plans
-├── deploy/
-│   ├── helm/                    # Kubernetes Helm chart
-│   └── grafana/                 # Grafana dashboard
-├── docker-compose.distributed.yml
-├── docker-compose.test.yml
-└── Makefile
+modules/
+  engine-service/          # Core engine — zero deps, pure JDK 21
+  engine-adapter/          # CLI, JMX parser, HTTP clients (HC4/HC5)
+  web-api/                 # Spring Boot REST API
+  distributed-controller/  # gRPC distributed controller
+  worker-node/             # gRPC worker
+  worker-proto/            # Protobuf definitions
+web-ui/                    # React 19 frontend
+test-servers/              # 11 protocol mock servers (Node.js)
+test-plans/                # Sample JMX test plans
+deploy/
+  helm/                    # Kubernetes Helm chart
+  grafana/                 # Grafana dashboard
 ```
 
 ---
 
-## Running Tests
+## Tests
 
 ```bash
-# All tests (backend)
-./gradlew test
-
-# Just engine tests (fastest — no Spring context)
-./gradlew :modules:engine-service:test
-
-# Frontend tests
-cd web-ui && npm test
+./gradlew test                           # all backend tests
+./gradlew :modules:engine-service:test   # engine only (no Spring context, fastest)
+cd web-ui && npm test                    # frontend tests
 ```
 
----
-
-## Forking for Your Team
-
-b3meter is designed to be forked. There are:
-
-- **No company-specific URLs** in any workflow or config
-- **No database to set up** (in-memory storage)
-- **No cloud provider lock-in** (Helm works on any K8s)
-- **No external service dependencies** for basic operation
-
-To customize:
-1. Fork the repo
-2. Change image names in `.github/workflows/release.yml`
-3. Add your own samplers in `modules/engine-service/src/main/java/.../interpreter/`
-4. Add your own themes in `web-ui/src/themes/themes.ts`
-5. Push to your registry
+CI runs on every push to `main`: spotless-check, backend-test, frontend-test, docker-build. OWASP dependency check runs weekly.
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and contribution guidelines.
+
+---
 
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE).
+
+---
+
+_Apache JMeter is a trademark of the Apache Software Foundation. b3meter is an independent project and is not affiliated with or endorsed by the Apache Software Foundation._
