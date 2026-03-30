@@ -1,0 +1,18 @@
+Clean build verification — 2026-03-29
+=====================================
+
+Command:  ./gradlew clean build
+Result:   BUILD SUCCESSFUL in 48s
+Tasks:    62 actionable tasks: 48 executed, 14 from cache
+Java:     OpenJDK 21 (Temurin)
+Platform: macOS Darwin 25.2.0
+
+spotlessCheck:  BUILD SUCCESSFUL (separate run, confirmed 0 violations)
+gitleaks:       0 real findings (2 FP — RFC 6455 WebSocket nonce — allowlisted in .gitleaks.toml)
+
+Notes:
+- Spotless decoupled from `check` lifecycle (isEnforceCheck = false)
+  to avoid Gradle parallel task ordering conflict with proto compilation.
+  CI runs ./gradlew spotlessCheck as a dedicated job (see .github/workflows/ci.yml).
+- Clean clone verification not run locally (repo not yet public);
+  CI will perform equivalent check on first push.

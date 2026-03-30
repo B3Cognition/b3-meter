@@ -2,9 +2,9 @@
 
 ## Schema version
 
-The current proto schema is **v1** (proto package `jmeternext.worker`, file `worker.proto`).
+The current proto schema is **v1** (proto package `b3meter.worker`, file `worker.proto`).
 
-The schema does **not** carry an explicit version field in the package name (e.g. `jmeternext.worker.v1`).
+The schema does **not** carry an explicit version field in the package name (e.g. `b3meter.worker.v1`).
 A version suffix will be added when a breaking change is introduced, following the policy below.
 
 ---
@@ -28,7 +28,7 @@ sent by newer workers, and vice versa:
 ## Breaking changes (require a package version bump)
 
 The following changes break wire compatibility and require renaming the package
-(e.g. `jmeternext.worker.v2`) and updating all callers:
+(e.g. `b3meter.worker.v2`) and updating all callers:
 
 | Change | Reason |
 |--------|--------|
@@ -57,7 +57,7 @@ message ExampleMessage {
 ## Versioning workflow
 
 1. **Patch** (non-breaking): update the `.proto`, regenerate, update `CHANGELOG` entry.
-2. **Breaking**: introduce `jmeternext.worker.v{N}` package, create `worker_v{N}.proto`,
+2. **Breaking**: introduce `b3meter.worker.v{N}` package, create `worker_v{N}.proto`,
    keep the old proto until all callers are migrated, then deprecate and remove.
 3. All changes to `.proto` files must be reviewed by at least one engineer familiar with
    the distributed-controller and worker-node modules.

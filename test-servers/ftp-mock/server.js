@@ -59,7 +59,7 @@ const server = net.createServer((socket) => {
   let binaryMode = false;
 
   // Send welcome banner
-  socket.write('220 jmeter-next FTP mock server ready\r\n');
+  socket.write('220 b3meter FTP mock server ready\r\n');
 
   let buffer = '';
 

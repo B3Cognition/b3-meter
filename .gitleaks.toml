@@ -1,0 +1,13 @@
+# gitleaks configuration for b3meter
+# https://github.com/gitleaks/gitleaks
+
+title = "b3meter gitleaks config"
+
+[allowlist]
+description = "False positives — test fixtures and well-known public constants"
+
+# dGhlIHNhbXBsZSBub25jZQ== is the base64 encoding of "the sample nonce",
+# the standard RFC 6455 WebSocket handshake test key (public constant, not a secret).
+regexes = [
+    "dGhlIHNhbXBsZSBub25jZQ==",
+]

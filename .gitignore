@@ -31,3 +31,20 @@ Thumbs.db
 *.log
 results.csv
 results.jsonl
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Key material
+*.key
+*.pem
+*.p12
+*.jks
+secrets/
+
+
+# Internal tooling (not for public OSS repo)
+.claude/
+.specify/squad/

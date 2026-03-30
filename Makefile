@@ -16,8 +16,8 @@ build:          ## Build all modules
 	./gradlew build -x test
 
 docker:         ## Build Docker images
-	docker build -f Dockerfile.controller -t jmeter-next-controller .
-	docker build -f Dockerfile.worker -t jmeter-next-worker .
+	docker build -f Dockerfile.controller -t b3meter-controller .
+	docker build -f Dockerfile.worker -t b3meter-worker .
 
 distributed:    ## Run distributed mode (1 controller + 3 workers)
 	docker compose -f docker-compose.distributed.yml up --build

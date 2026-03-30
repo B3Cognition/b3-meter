@@ -11,7 +11,8 @@
  */
 
 // No plugins applied — placeholder only.
-// TODO(T-web-ui-scaffold): apply node-gradle plugin and configure Vite build.
+// Real React 19 + Vite source lives in /web-ui/ at the repository root.
+// The node-gradle plugin will be wired here once the UI scaffold is ready.
 
 description = "Web-ui: React 19 + Vite frontend (placeholder)"
 
