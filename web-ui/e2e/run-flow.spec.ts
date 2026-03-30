@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('jMeter Next — Run Flow E2E', () => {
+test.describe('b3meter — Run Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
   });
