@@ -91,21 +91,21 @@ describe('PropertyPanel — ThreadGroup form', () => {
 
   it('renders all ThreadGroup fields', () => {
     render(<PropertyPanel />);
-    expect(screen.getByLabelText('num_threads')).toBeInTheDocument();
-    expect(screen.getByLabelText('ramp_time')).toBeInTheDocument();
-    expect(screen.getByLabelText('loops')).toBeInTheDocument();
-    expect(screen.getByLabelText('duration')).toBeInTheDocument();
+    expect(screen.getByLabelText('Number of Threads (users)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ramp-up period (seconds)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Loop Count')).toBeInTheDocument();
+    expect(screen.getByLabelText('Duration (seconds)')).toBeInTheDocument();
   });
 
   it('prepopulates fields from node properties', () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('num_threads') as HTMLInputElement;
+    const input = screen.getByLabelText('Number of Threads (users)') as HTMLInputElement;
     expect(input.value).toBe('10');
   });
 
   it('shows "Must be at least 1" error for invalid thread count (-1)', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('num_threads');
+    const input = screen.getByLabelText('Number of Threads (users)');
 
     fillInput(input, '-1');
 
@@ -116,7 +116,7 @@ describe('PropertyPanel — ThreadGroup form', () => {
 
   it('shows error when thread count is 0', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('num_threads');
+    const input = screen.getByLabelText('Number of Threads (users)');
 
     fillInput(input, '0');
 
@@ -127,7 +127,7 @@ describe('PropertyPanel — ThreadGroup form', () => {
 
   it('does not show an error for a valid thread count', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('num_threads');
+    const input = screen.getByLabelText('Number of Threads (users)');
 
     fillInput(input, '50');
 
@@ -138,7 +138,7 @@ describe('PropertyPanel — ThreadGroup form', () => {
 
   it('updates the store on valid form submission', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('num_threads');
+    const input = screen.getByLabelText('Number of Threads (users)');
 
     fillInput(input, '20');
 
@@ -287,7 +287,7 @@ describe('PropertyPanel — store integration', () => {
 
     render(<PropertyPanel />);
 
-    const rampInput = screen.getByLabelText('ramp_time');
+    const rampInput = screen.getByLabelText('Ramp-up period (seconds)');
     fillInput(rampInput, '30');
 
     await act(async () => {
@@ -313,7 +313,7 @@ describe('PropertyPanel — store integration', () => {
     render(<PropertyPanel />);
 
     // Set an invalid num_threads — form should not submit
-    const threadsInput = screen.getByLabelText('num_threads');
+    const threadsInput = screen.getByLabelText('Number of Threads (users)');
     fillInput(threadsInput, '-5');
 
     await act(async () => {
