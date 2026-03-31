@@ -40,6 +40,28 @@ management:
     tags:
       application: b3meter
 
+b3meter:
+  mocks:
+    http-port: ${HTTP_MOCK_PORT:9081}
+    ws-port: ${WS_MOCK_PORT:9082}
+    sse-port: ${SSE_MOCK_PORT:9083}
+    hls-port: ${HLS_MOCK_PORT:9084}
+    mqtt-port: ${MQTT_MOCK_PORT:9883}
+    mqtt-health-port: ${MQTT_HEALTH_PORT:9884}
+    grpc-port: ${GRPC_MOCK_PORT:9051}
+    grpc-health-port: ${GRPC_HEALTH_PORT:9085}
+    dash-port: ${DASH_MOCK_PORT:9086}
+    stun-port: ${STUN_MOCK_PORT:9087}
+    webrtc-port: ${WEBRTC_MOCK_PORT:9088}
+    ftp-port: ${FTP_MOCK_PORT:9122}
+    ftp-health-port: ${FTP_HEALTH_PORT:9123}
+    ldap-port: ${LDAP_MOCK_PORT:9390}
+    ldap-health-port: ${LDAP_HEALTH_PORT:9391}
+    tcp-port: ${TCP_MOCK_PORT:9089}
+    tcp-health-port: ${TCP_HEALTH_PORT:9090}
+    smtp-port: ${SMTP_MOCK_PORT:9025}
+    smtp-health-port: ${SMTP_HEALTH_PORT:9026}
+
 jmeter:
   http:
     maxConnections: 2000

@@ -12,6 +12,8 @@
 
 b3meter is a drop-in replacement for Apache JMeter — not a wrapper around it. It reads `.jmx` test plans directly and executes them through a ground-up engine built on Java 21 virtual threads. You get a React 19 web UI, 27 built-in protocol samplers, arrival-rate execution models, distributed mode with accurate HDR histogram merging, and four metrics backends — all with zero framework dependencies in the core engine.
 
+> **New here?** See [GETTING-STARTED.md](GETTING-STARTED.md) for a complete step-by-step walkthrough — prerequisites, startup, Docker/K8s deployment, and corrected API examples.
+
 ---
 
 ## Features

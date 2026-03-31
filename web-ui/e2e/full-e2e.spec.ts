@@ -10,7 +10,7 @@ test.describe('Full E2E: All plans loaded + mock server verification', () => {
 
     const expectedPlans = [
       'http-smoke',
-      'websocket-smoke',
+      'ws-smoke',
       'sse-smoke',
       'hls-smoke',
       'multi-protocol',

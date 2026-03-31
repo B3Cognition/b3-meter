@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="gRPC Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against grpc-mock server — 3 VUs call Greeter.SayHello</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="GRPC_HOST" elementType="Argument">
+            <stringProp name="Argument.name">GRPC_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(grpc.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="GRPC_PORT" elementType="Argument">
+            <stringProp name="Argument.name">GRPC_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(grpc.port,9051)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="gRPC Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">3</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">2</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">10</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- gRPC SayHello unary call -->
+        <com.blazemeter.jmeter.grpc.client.GrpcSampler guiclass="com.blazemeter.jmeter.grpc.client.GrpcSamplerUI" testclass="com.blazemeter.jmeter.grpc.client.GrpcSampler" testname="SayHello" enabled="true">
+          <stringProp name="GrpcSampler.protoFolder">${__P(grpc.protoFolder,test-data/proto)}</stringProp>
+          <stringProp name="GrpcSampler.libFolder"></stringProp>
+          <stringProp name="GrpcSampler.host">${GRPC_HOST}</stringProp>
+          <stringProp name="GrpcSampler.port">${GRPC_PORT}</stringProp>
+          <stringProp name="GrpcSampler.fullMethod">greeter.Greeter/SayHello</stringProp>
+          <stringProp name="GrpcSampler.requestJson">{"name":"b3-smoke"}</stringProp>
+          <boolProp name="GrpcSampler.tls">false</boolProp>
+          <boolProp name="GrpcSampler.tlsDisableVerification">false</boolProp>
+          <intProp name="GrpcSampler.deadline">5000</intProp>
+          <boolProp name="GrpcSampler.awaitTermination">true</boolProp>
+          <longProp name="GrpcSampler.awaitTerminationTimeout">500</longProp>
+          <boolProp name="GrpcSampler.channelAwaitTermination">false</boolProp>
+          <longProp name="GrpcSampler.channelAwaitTerminationTimeout">500</longProp>
+        </com.blazemeter.jmeter.grpc.client.GrpcSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert Hello response" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">Hello</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="Assert message field exists" enabled="true">
+            <stringProp name="JSON_PATH">$.message</stringProp>
+            <stringProp name="EXPECTED_VALUE"></stringProp>
+            <boolProp name="JSONVALIDATION">false</boolProp>
+            <boolProp name="EXPECT_NULL">false</boolProp>
+            <boolProp name="INVERT">false</boolProp>
+            <boolProp name="ISREGEX">false</boolProp>
+          </JSONPathAssertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

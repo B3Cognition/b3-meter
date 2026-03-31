@@ -1,11 +1,12 @@
-version: '3.8'
 services:
   http-mock:
     build: ./test-servers/http-mock
     ports:
-      - "8081:8081"
+      - "${HTTP_MOCK_PORT:-9081}:${HTTP_MOCK_PORT:-9081}"
+    environment:
+      PORT: ${HTTP_MOCK_PORT:-9081}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${HTTP_MOCK_PORT:-9081}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -13,9 +14,11 @@ services:
   ws-mock:
     build: ./test-servers/ws-mock
     ports:
-      - "8082:8082"
+      - "${WS_MOCK_PORT:-9082}:${WS_MOCK_PORT:-9082}"
+    environment:
+      PORT: ${WS_MOCK_PORT:-9082}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${WS_MOCK_PORT:-9082}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -23,9 +26,11 @@ services:
   sse-mock:
     build: ./test-servers/sse-mock
     ports:
-      - "8083:8083"
+      - "${SSE_MOCK_PORT:-9083}:${SSE_MOCK_PORT:-9083}"
+    environment:
+      PORT: ${SSE_MOCK_PORT:-9083}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${SSE_MOCK_PORT:-9083}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -33,9 +38,11 @@ services:
   hls-mock:
     build: ./test-servers/hls-mock
     ports:
-      - "8084:8084"
+      - "${HLS_MOCK_PORT:-9084}:${HLS_MOCK_PORT:-9084}"
+    environment:
+      PORT: ${HLS_MOCK_PORT:-9084}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${HLS_MOCK_PORT:-9084}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -43,9 +50,13 @@ services:
   mqtt-mock:
     build: ./test-servers/mqtt-mock
     ports:
-      - "1883:1883"
+      - "${MQTT_MOCK_PORT:-9883}:${MQTT_MOCK_PORT:-9883}"
+      - "${MQTT_HEALTH_PORT:-9884}:${MQTT_HEALTH_PORT:-9884}"
+    environment:
+      PORT: ${MQTT_MOCK_PORT:-9883}
+      HEALTH_PORT: ${MQTT_HEALTH_PORT:-9884}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1884/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${MQTT_HEALTH_PORT:-9884}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -53,10 +64,13 @@ services:
   grpc-mock:
     build: ./test-servers/grpc-mock
     ports:
-      - "50051:50051"
-      - "8085:8085"
+      - "${GRPC_MOCK_PORT:-9051}:${GRPC_MOCK_PORT:-9051}"
+      - "${GRPC_HEALTH_PORT:-9085}:${GRPC_HEALTH_PORT:-9085}"
+    environment:
+      PORT: ${GRPC_MOCK_PORT:-9051}
+      HTTP_PORT: ${GRPC_HEALTH_PORT:-9085}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${GRPC_HEALTH_PORT:-9085}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -64,30 +78,91 @@ services:
   dash-mock:
     build: ./test-servers/dash-mock
     ports:
-      - "8086:8086"
+      - "${DASH_MOCK_PORT:-9086}:${DASH_MOCK_PORT:-9086}"
+    environment:
+      PORT: ${DASH_MOCK_PORT:-9086}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${DASH_MOCK_PORT:-9086}/health"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  b3meter:
-    build: .
+  stun-mock:
+    build: ./test-servers/stun-mock
     ports:
-      - "8080:8080"
-      - "3000:3000"
-    depends_on:
-      http-mock:
-        condition: service_healthy
-      ws-mock:
-        condition: service_healthy
-      sse-mock:
-        condition: service_healthy
-      hls-mock:
-        condition: service_healthy
-      grpc-mock:
-        condition: service_healthy
-      mqtt-mock:
-        condition: service_healthy
-      dash-mock:
-        condition: service_healthy
+      - "${STUN_MOCK_PORT:-9087}:${STUN_MOCK_PORT:-9087}"
+      - "${STUN_UDP_PORT:-3478}:${STUN_UDP_PORT:-3478}/udp"
+    environment:
+      PORT: ${STUN_MOCK_PORT:-9087}
+      STUN_PORT: ${STUN_UDP_PORT:-3478}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${STUN_MOCK_PORT:-9087}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  webrtc-signaling:
+    build: ./test-servers/webrtc-signaling-mock
+    ports:
+      - "${WEBRTC_MOCK_PORT:-9088}:${WEBRTC_MOCK_PORT:-9088}"
+    environment:
+      PORT: ${WEBRTC_MOCK_PORT:-9088}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${WEBRTC_MOCK_PORT:-9088}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ftp-mock:
+    build: ./test-servers/ftp-mock
+    ports:
+      - "${FTP_MOCK_PORT:-9122}:${FTP_MOCK_PORT:-9122}"
+      - "${FTP_HEALTH_PORT:-9123}:${FTP_HEALTH_PORT:-9123}"
+    environment:
+      PORT: ${FTP_MOCK_PORT:-9122}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${FTP_HEALTH_PORT:-9123}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ldap-mock:
+    build: ./test-servers/ldap-mock
+    ports:
+      - "${LDAP_MOCK_PORT:-9390}:${LDAP_MOCK_PORT:-9390}"
+      - "${LDAP_HEALTH_PORT:-9391}:${LDAP_HEALTH_PORT:-9391}"
+    environment:
+      PORT: ${LDAP_MOCK_PORT:-9390}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${LDAP_HEALTH_PORT:-9391}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  tcp-mock:
+    build: ./test-servers/tcp-mock
+    ports:
+      - "${TCP_MOCK_PORT:-9089}:${TCP_MOCK_PORT:-9089}"
+      - "${TCP_HEALTH_PORT:-9090}:${TCP_HEALTH_PORT:-9090}"
+    environment:
+      TCP_PORT: ${TCP_MOCK_PORT:-9089}
+      TCP_HEALTH_PORT: ${TCP_HEALTH_PORT:-9090}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${TCP_HEALTH_PORT:-9090}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  smtp-mock:
+    build: ./test-servers/smtp-mock
+    ports:
+      - "${SMTP_MOCK_PORT:-9025}:${SMTP_MOCK_PORT:-9025}"
+      - "${SMTP_HEALTH_PORT:-9026}:${SMTP_HEALTH_PORT:-9026}"
+    environment:
+      SMTP_PORT: ${SMTP_MOCK_PORT:-9025}
+      SMTP_HEALTH_PORT: ${SMTP_HEALTH_PORT:-9026}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${SMTP_HEALTH_PORT:-9026}/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
