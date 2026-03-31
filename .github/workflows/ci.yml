@@ -73,8 +73,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Build JARs
-        run: ./gradlew bootJar
+      - name: Build JARs and license report
+        run: ./gradlew bootJar generateLicenseReport
       - name: Build Docker images
         run: |
           docker build -f Dockerfile.controller -t b3meter/controller:${{ github.sha }} .

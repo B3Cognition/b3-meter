@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * <p>All methods are {@code static}; the class is not instantiable.
  *
  * <p>Implements Constitution Principle I: Engine-First Decoupling — this class
- * has zero {@code javax.swing.*} or {@code java.awt.*} imports.
+ * has zero GUI framework imports (engine-service is headless).
  */
 public final class EngineUtils {
 

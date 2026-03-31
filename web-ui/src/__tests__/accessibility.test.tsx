@@ -145,7 +145,7 @@ describe('Accessibility — ARIA roles', () => {
     expect(screen.getByRole('button', { name: /apply/i })).toBeInTheDocument();
   });
 
-  it('NodeContextMenu Add Child has role="menuitem"', () => {
+  it('NodeContextMenu Add has role="menuitem"', () => {
     const root = makeNode('root');
     useTestPlanStore.getState().setTree(makeTree(root));
 
@@ -153,7 +153,7 @@ describe('Accessibility — ARIA roles', () => {
       <NodeContextMenu node={root} position={{ x: 0, y: 0 }} onClose={vi.fn()} />,
     );
 
-    expect(screen.getByRole('menuitem', { name: 'Add Child' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Add' })).toBeInTheDocument();
   });
 
   it('NodeContextMenu Delete has role="menuitem"', () => {
@@ -341,14 +341,14 @@ describe('Accessibility — keyboard navigation', () => {
       <NodeContextMenu node={root} position={{ x: 0, y: 0 }} onClose={vi.fn()} />,
     );
 
-    const addBtn = screen.getByRole('menuitem', { name: 'Add Child' });
+    const addBtn = screen.getByRole('menuitem', { name: 'Add' });
     expect(addBtn).not.toHaveAttribute('tabindex', '-1');
 
     const deleteBtn = screen.getByRole('menuitem', { name: 'Delete' });
     expect(deleteBtn).not.toHaveAttribute('tabindex', '-1');
   });
 
-  it('NodeContextMenu Add Child triggers store addNode when Enter-clicked', () => {
+  it('NodeContextMenu Add submenu opens on hover and allows item selection', () => {
     const root = makeNode('root');
     useTestPlanStore.getState().setTree(makeTree(root));
     const onClose = vi.fn();
@@ -357,8 +357,13 @@ describe('Accessibility — keyboard navigation', () => {
       <NodeContextMenu node={root} position={{ x: 0, y: 0 }} onClose={onClose} />,
     );
 
-    // Simulate keyboard Enter activation via click (RTL fires click on Enter for buttons).
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Add Child' }));
+    // Hover the "Add" trigger to open the cascading submenu
+    fireEvent.mouseEnter(screen.getByText('Add').closest('.context-menu-submenu-trigger')!);
+    // Hover the "Sampler" category
+    fireEvent.mouseEnter(screen.getByText('Sampler').closest('.context-menu-submenu-trigger')!);
+    // Click a sampler item
+    fireEvent.click(screen.getByText('HTTP Request'));
+
     const tree = useTestPlanStore.getState().tree;
     expect(tree?.root.children).toHaveLength(1);
   });

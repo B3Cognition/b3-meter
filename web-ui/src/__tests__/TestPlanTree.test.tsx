@@ -246,7 +246,7 @@ describe('NodeContextMenu', () => {
       <NodeContextMenu node={node} position={position} onClose={onClose} />,
     );
 
-    expect(screen.getByText('Add Child')).toBeInTheDocument();
+    expect(screen.getByText('Add')).toBeInTheDocument();
     expect(screen.getByText('Duplicate')).toBeInTheDocument();
     expect(screen.getByText('Disable')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
@@ -308,7 +308,7 @@ describe('NodeContextMenu', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('calls addNode when Add Child is clicked', () => {
+  it('calls addNode when a sampler is selected from Add submenu', () => {
     const root = makeNode('root');
     useTestPlanStore.getState().setTree(makeTree(root));
     const onClose = vi.fn();
@@ -317,7 +317,12 @@ describe('NodeContextMenu', () => {
       <NodeContextMenu node={root} position={position} onClose={onClose} />,
     );
 
-    fireEvent.click(screen.getByText('Add Child'));
+    // Hover the "Add" trigger to open the submenu
+    fireEvent.mouseEnter(screen.getByText('Add').closest('.context-menu-submenu-trigger')!);
+    // Hover the "Sampler" category to open the sampler submenu
+    fireEvent.mouseEnter(screen.getByText('Sampler').closest('.context-menu-submenu-trigger')!);
+    // Click a sampler item
+    fireEvent.click(screen.getByText('HTTP Request'));
 
     const tree = useTestPlanStore.getState().tree;
     expect(tree?.root.children).toHaveLength(1);
