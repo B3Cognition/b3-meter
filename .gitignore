@@ -47,4 +47,5 @@ secrets/
 
 # Internal tooling (not for public OSS repo)
 .claude/
-.specify/squad/
+.specify/
+specs/

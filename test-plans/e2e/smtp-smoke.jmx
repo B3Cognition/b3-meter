@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="SMTP Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against smtp-mock server — 2 VUs send a full SMTP session, assert no error code</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="SMTP_HOST" elementType="Argument">
+            <stringProp name="Argument.name">SMTP_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(smtp.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="SMTP_PORT" elementType="Argument">
+            <stringProp name="Argument.name">SMTP_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(smtp.port,9025)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="SMTP Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">10</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- Send email via SMTP -->
+        <SMTPSampler guiclass="SMTPSamplerUI" testclass="SMTPSampler" testname="Send SMTP Message" enabled="true">
+          <stringProp name="SMTPSampler.server">${SMTP_HOST}</stringProp>
+          <stringProp name="SMTPSampler.port">${SMTP_PORT}</stringProp>
+          <stringProp name="SMTPSampler.from">test@b3meter.local</stringProp>
+          <stringProp name="SMTPSampler.replyTo"></stringProp>
+          <stringProp name="SMTPSampler.receiverTo">sink@b3meter.local</stringProp>
+          <stringProp name="SMTPSampler.receiverCC"></stringProp>
+          <stringProp name="SMTPSampler.receiverBCC"></stringProp>
+          <stringProp name="SMTPSampler.subject">b3-smoke</stringProp>
+          <stringProp name="SMTPSampler.message">smoke-test</stringProp>
+          <boolProp name="SMTPSampler.useAuth">false</boolProp>
+          <stringProp name="SMTPSampler.username"></stringProp>
+          <stringProp name="SMTPSampler.password"></stringProp>
+          <boolProp name="SMTPSampler.useSSL">false</boolProp>
+          <boolProp name="SMTPSampler.useStartTLS">false</boolProp>
+          <boolProp name="SMTPSampler.trustAllCerts">true</boolProp>
+          <boolProp name="SMTPSampler.enforceStartTLS">false</boolProp>
+          <boolProp name="SMTPSampler.useEML">false</boolProp>
+          <stringProp name="SMTPSampler.sendEmlMessage"></stringProp>
+          <intProp name="SMTPSampler.connectionTimeout">5000</intProp>
+          <intProp name="SMTPSampler.responseTimeout">10000</intProp>
+        </SMTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert no SMTP error code" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="4xx">4\d\d</stringProp>
+              <stringProp name="5xx">5\d\d</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">6</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+          <stringProp name="ConstantTimer.delay">200</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

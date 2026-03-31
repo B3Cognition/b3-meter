@@ -28,7 +28,7 @@ import './SelfSmoke.css';
 const PROTOCOL_ORDER = [
   'http-mock', 'ws-mock', 'sse-mock', 'hls-mock', 'mqtt-mock',
   'grpc-mock', 'dash-mock', 'stun-mock', 'webrtc-signaling',
-  'ftp-mock', 'ldap-mock',
+  'ftp-mock', 'ldap-mock', 'tcp-mock', 'smtp-mock',
 ];
 
 export function SelfSmoke() {

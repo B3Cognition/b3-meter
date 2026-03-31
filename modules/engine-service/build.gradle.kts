@@ -17,6 +17,8 @@ dependencies {
     testImplementation(platform(rootProject.libs.junit.bom))
     testImplementation(rootProject.libs.junit.jupiter)
     testImplementation(rootProject.libs.archunit)
+    testImplementation(rootProject.libs.h2)
+    testImplementation("org.mockito:mockito-core:5.11.0")
 }
 
 description = "Engine-service: API interfaces (UIBridge, TestRunContext)"

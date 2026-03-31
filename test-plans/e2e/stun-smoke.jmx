@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="STUN Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against stun-mock server — 2 VUs send STUN Binding Request, assert Binding Response with mappedAddress</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="STUN_HOST" elementType="Argument">
+            <stringProp name="Argument.name">STUN_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(stun.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="STUN_HEALTH_PORT" elementType="Argument">
+            <stringProp name="Argument.name">STUN_HEALTH_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(stun.health.port,9087)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="STUN_UDP_PORT" elementType="Argument">
+            <stringProp name="Argument.name">STUN_UDP_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(stun.udp.port,3478)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="STUN Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">10</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- Health check via HTTP — verifies STUN server is running -->
+        <HTTPSampler guiclass="HttpTestSampleGui" testclass="HTTPSampler" testname="STUN Health Check" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${STUN_HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${STUN_HEALTH_PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.path">/health</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <intProp name="HTTPSampler.connect_timeout">5000</intProp>
+          <intProp name="HTTPSampler.response_timeout">10000</intProp>
+        </HTTPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert status ok" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">ok</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert HTTP 200" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <!-- STUN Binding Request via WebRTC sampler in STUN-only mode -->
+        <com.b3meter.jmeter.webrtc.WebRTCSampler guiclass="com.b3meter.jmeter.webrtc.WebRTCSamplerUI" testclass="com.b3meter.jmeter.webrtc.WebRTCSampler" testname="STUN Binding Request" enabled="true">
+          <stringProp name="WebRTCSampler.host">${STUN_HOST}</stringProp>
+          <stringProp name="WebRTCSampler.port">${STUN_HEALTH_PORT}</stringProp>
+          <stringProp name="WebRTCSampler.udpPort">${STUN_UDP_PORT}</stringProp>
+          <stringProp name="WebRTCSampler.mode">STUN_ONLY</stringProp>
+          <intProp name="WebRTCSampler.timeout">5000</intProp>
+        </com.b3meter.jmeter.webrtc.WebRTCSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert Binding Response" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">mappedAddress</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

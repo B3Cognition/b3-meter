@@ -54,6 +54,9 @@ dependencyCheck {
     suppressionFile = "${rootDir}/config/owasp-suppressions.xml"
     formats = listOf("HTML", "JSON")
     outputDirectory = "${layout.buildDirectory.asFile.get()}/reports/dependency-check"
+    nvd.apiKey = System.getenv("NVD_API_KEY") ?: ""
+    nvd.delay = 4000           // ms between NVD API requests (avoid 403 rate limit)
+    nvd.validForHours = 24     // cache NVD data for 24h to reduce API calls
 }
 
 // License report — generates THIRD-PARTY-LICENSES.txt from all runtime dependencies

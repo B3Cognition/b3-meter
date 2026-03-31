@@ -18,6 +18,7 @@ package com.b3meter.web.api.controller;
 import com.b3meter.web.api.controller.dto.MetricsDto;
 import com.b3meter.web.api.controller.dto.StartRunRequest;
 import com.b3meter.web.api.controller.dto.TestRunDto;
+import com.b3meter.web.api.security.ResourceQuotaService;
 import com.b3meter.web.api.service.TestRunService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,6 +70,8 @@ public class TestRunController {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(run);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        } catch (ResourceQuotaService.QuotaExceededException e) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
     }
 

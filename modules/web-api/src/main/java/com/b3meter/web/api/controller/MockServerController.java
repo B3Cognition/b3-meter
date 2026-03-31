@@ -18,12 +18,14 @@ package com.b3meter.web.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -37,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for mock server lifecycle and self-smoke testing.
+ * Ports are configurable via application.yml (b3meter.mocks.*) to avoid
+ * conflicts with other services running on the same machine.
  */
 @RestController
 @RequestMapping("/api/v1/mocks")
@@ -46,19 +50,46 @@ public class MockServerController {
     private final ConcurrentHashMap<String, Process> mockProcesses = new ConcurrentHashMap<>();
     private static final File PROJECT_ROOT = findProjectRoot();
 
-    private static final List<MockServerDef> SERVERS = List.of(
-            new MockServerDef("http-mock",          8081, "HTTP",   "test-servers/http-mock",              "server.js"),
-            new MockServerDef("ws-mock",            8082, "WS",     "test-servers/ws-mock",                "server.js"),
-            new MockServerDef("sse-mock",           8083, "SSE",    "test-servers/sse-mock",               "server.js"),
-            new MockServerDef("hls-mock",           8084, "HLS",    "test-servers/hls-mock",               "server.js"),
-            new MockServerDef("mqtt-mock",          1883, "MQTT",   "test-servers/mqtt-mock",              "broker.js", 1884),
-            new MockServerDef("grpc-mock",          8085, "gRPC",   "test-servers/grpc-mock",              "server.js"),
-            new MockServerDef("dash-mock",          8086, "DASH",   "test-servers/dash-mock",              "server.js"),
-            new MockServerDef("stun-mock",          8087, "STUN",   "test-servers/stun-mock",              "server.js"),
-            new MockServerDef("webrtc-signaling",   8088, "WebRTC", "test-servers/webrtc-signaling-mock",  "server.js"),
-            new MockServerDef("ftp-mock",           2122, "FTP",    "test-servers/ftp-mock",               "server.js"),
-            new MockServerDef("ldap-mock",          3390, "LDAP",   "test-servers/ldap-mock",              "server.js")
-    );
+    @Value("${b3meter.mocks.http-port:9081}")      private int httpPort;
+    @Value("${b3meter.mocks.ws-port:9082}")         private int wsPort;
+    @Value("${b3meter.mocks.sse-port:9083}")        private int ssePort;
+    @Value("${b3meter.mocks.hls-port:9084}")        private int hlsPort;
+    @Value("${b3meter.mocks.mqtt-port:9883}")       private int mqttPort;
+    @Value("${b3meter.mocks.mqtt-health-port:9884}") private int mqttHealthPort;
+    @Value("${b3meter.mocks.grpc-port:9051}")       private int grpcPort;
+    @Value("${b3meter.mocks.grpc-health-port:9085}") private int grpcHealthPort;
+    @Value("${b3meter.mocks.dash-port:9086}")       private int dashPort;
+    @Value("${b3meter.mocks.stun-port:9087}")       private int stunPort;
+    @Value("${b3meter.mocks.webrtc-port:9088}")     private int webrtcPort;
+    @Value("${b3meter.mocks.ftp-port:9122}")        private int ftpPort;
+    @Value("${b3meter.mocks.ftp-health-port:9123}")  private int ftpHealthPort;
+    @Value("${b3meter.mocks.ldap-port:9390}")       private int ldapPort;
+    @Value("${b3meter.mocks.ldap-health-port:9391}") private int ldapHealthPort;
+    @Value("${b3meter.mocks.tcp-port:9089}")         private int tcpPort;
+    @Value("${b3meter.mocks.tcp-health-port:9090}")  private int tcpHealthPort;
+    @Value("${b3meter.mocks.smtp-port:9025}")        private int smtpPort;
+    @Value("${b3meter.mocks.smtp-health-port:9026}") private int smtpHealthPort;
+
+    private List<MockServerDef> servers;
+
+    @PostConstruct
+    void initServers() {
+        servers = List.of(
+            new MockServerDef("http-mock",        httpPort,  "HTTP",   "test-servers/http-mock",             "server.js"),
+            new MockServerDef("ws-mock",          wsPort,    "WS",     "test-servers/ws-mock",               "server.js"),
+            new MockServerDef("sse-mock",         ssePort,   "SSE",    "test-servers/sse-mock",              "server.js"),
+            new MockServerDef("hls-mock",         hlsPort,   "HLS",    "test-servers/hls-mock",              "server.js"),
+            new MockServerDef("mqtt-mock",        mqttPort,  "MQTT",   "test-servers/mqtt-mock",             "broker.js", mqttHealthPort),
+            new MockServerDef("grpc-mock",        grpcPort,  "gRPC",   "test-servers/grpc-mock",             "server.js", grpcHealthPort),
+            new MockServerDef("dash-mock",        dashPort,  "DASH",   "test-servers/dash-mock",             "server.js"),
+            new MockServerDef("stun-mock",        stunPort,  "STUN",   "test-servers/stun-mock",             "server.js"),
+            new MockServerDef("webrtc-signaling", webrtcPort,"WebRTC", "test-servers/webrtc-signaling-mock", "server.js"),
+            new MockServerDef("ftp-mock",         ftpPort,   "FTP",    "test-servers/ftp-mock",              "server.js", ftpHealthPort),
+            new MockServerDef("ldap-mock",        ldapPort,  "LDAP",   "test-servers/ldap-mock",             "server.js", ldapHealthPort),
+            new MockServerDef("tcp-mock",         tcpPort,   "TCP",    "test-servers/tcp-mock",              "server.js", tcpHealthPort),
+            new MockServerDef("smtp-mock",        smtpPort,  "SMTP",   "test-servers/smtp-mock",             "server.js", smtpHealthPort)
+        );
+    }
 
     private static File findProjectRoot() {
         File cwd = new File(System.getProperty("user.dir"));
@@ -73,17 +104,18 @@ public class MockServerController {
     private static final List<String> SMOKE_PLANS = List.of(
             "http-smoke", "ws-smoke", "sse-smoke", "hls-smoke",
             "mqtt-smoke", "grpc-smoke", "dash-smoke", "stun-smoke",
-            "webrtc-smoke", "ftp-smoke", "ldap-smoke"
+            "webrtc-smoke", "ftp-smoke", "ldap-smoke",
+            "tcp-smoke", "smtp-smoke"
     );
 
-    @Operation(summary = "Start all mock servers", description = "Launches all 11 protocol mock servers as background processes")
+    @Operation(summary = "Start all mock servers", description = "Launches all 13 protocol mock servers as background processes")
     @ApiResponse(responseCode = "200", description = "Servers started (with counts and any errors)")
     @PostMapping("/start")
     public ResponseEntity<Map<String, Object>> startAll() {
         List<String> started = new ArrayList<>();
         List<String> errors = new ArrayList<>();
 
-        for (MockServerDef def : SERVERS) {
+        for (MockServerDef def : servers) {
             if (mockProcesses.containsKey(def.name) && mockProcesses.get(def.name).isAlive()) {
                 continue;
             }
@@ -124,6 +156,10 @@ public class MockServerController {
                 ProcessBuilder pb = new ProcessBuilder(nodePath, def.scriptFile);
                 pb.directory(serverDir);
                 pb.redirectErrorStream(true);
+                pb.environment().put("PORT", String.valueOf(def.port));
+                if (def.healthPort != def.port) {
+                    pb.environment().put("HEALTH_PORT", String.valueOf(def.healthPort));
+                }
                 Process process = pb.start();
                 mockProcesses.put(def.name, process);
                 started.add(def.name);
@@ -156,7 +192,7 @@ public class MockServerController {
         }
         mockProcesses.clear();
 
-        for (MockServerDef def : SERVERS) {
+        for (MockServerDef def : servers) {
             int[] ports = (def.healthPort != def.port)
                     ? new int[]{def.port, def.healthPort}
                     : new int[]{def.port};
@@ -188,7 +224,7 @@ public class MockServerController {
     public ResponseEntity<Map<String, Object>> status() {
         Map<String, Object> result = new LinkedHashMap<>();
 
-        for (MockServerDef def : SERVERS) {
+        for (MockServerDef def : servers) {
             Map<String, Object> serverStatus = new LinkedHashMap<>();
             serverStatus.put("port", def.port);
             serverStatus.put("protocol", def.protocol);
@@ -225,7 +261,7 @@ public class MockServerController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Run smoke tests", description = "Executes all 11 smoke test plans sequentially against running mock servers")
+    @Operation(summary = "Run smoke tests", description = "Executes all 13 smoke test plans sequentially against running mock servers")
     @ApiResponse(responseCode = "200", description = "Smoke test results with per-plan and overall summary")
     @PostMapping("/smoke")
     public ResponseEntity<Map<String, Object>> runSmoke() {
@@ -240,7 +276,7 @@ public class MockServerController {
             planResult.put("plan", planName);
 
             String serverName = planName.replace("-smoke", "-mock");
-            MockServerDef serverDef = SERVERS.stream()
+            MockServerDef serverDef = servers.stream()
                     .filter(s -> s.name.equals(serverName) ||
                             (planName.equals("webrtc-smoke") && s.name.equals("webrtc-signaling")))
                     .findFirst()

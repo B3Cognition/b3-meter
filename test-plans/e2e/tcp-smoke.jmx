@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="TCP Smoke Test" enabled="true">
+      <stringProp name="TestPlan.comments">E2E smoke test against tcp-mock server — 2 VUs send hello\n, assert echo response</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="TCP_HOST" elementType="Argument">
+            <stringProp name="Argument.name">TCP_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(tcp.host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TCP_PORT" elementType="Argument">
+            <stringProp name="Argument.name">TCP_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(tcp.port,9089)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="TCP Users" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">3</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">10</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <!-- TCP echo request -->
+        <TCPSampler guiclass="TCPSamplerUI" testclass="TCPSampler" testname="TCP Echo" enabled="true">
+          <stringProp name="TCPSampler.server">${TCP_HOST}</stringProp>
+          <stringProp name="TCPSampler.port">${TCP_PORT}</stringProp>
+          <stringProp name="TCPSampler.requestData">hello\n</stringProp>
+          <boolProp name="TCPSampler.reUseConnection">false</boolProp>
+          <boolProp name="TCPSampler.closeConnection">true</boolProp>
+          <stringProp name="TCPSampler.soLinger">0</stringProp>
+          <intProp name="TCPSampler.EolByte">10</intProp>
+          <intProp name="TCPSampler.ConnectTimeout">5000</intProp>
+          <intProp name="TCPSampler.ResponseTimeout">10000</intProp>
+          <stringProp name="TCPSampler.classname">TCPClientImpl</stringProp>
+        </TCPSampler>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Assert echo response" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">hello</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">2</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+          <stringProp name="ConstantTimer.delay">200</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

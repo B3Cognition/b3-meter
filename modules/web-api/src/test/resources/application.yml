@@ -12,3 +12,11 @@ management:
     metrics:
       export:
         enabled: true
+
+# Raise quota limits so multiple integration tests can start runs
+# without hitting the default concurrent-run cap of 3.
+jmeter:
+  quota:
+    max-concurrent-runs: 100
+    max-virtual-users: 10000
+    max-duration-seconds: 14400

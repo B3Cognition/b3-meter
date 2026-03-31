@@ -267,7 +267,10 @@ class TestRunControllerTest {
                 "/api/v1/runs",
                 new StartRunRequest(planId, 1, 0L, null, null, null, null, null),
                 TestRunDto.class);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode(),
+                "startRun helper: expected 202 ACCEPTED but got " + response.getStatusCode());
         assertNotNull(response.getBody(), "startRun helper: body must not be null");
+        assertNotNull(response.getBody().id(), "startRun helper: run id must not be null");
         return response.getBody();
     }
 }
