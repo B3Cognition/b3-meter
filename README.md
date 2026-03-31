@@ -14,6 +14,8 @@ b3meter is a drop-in replacement for Apache JMeter — not a wrapper around it. 
 
 > **New here?** See [GETTING-STARTED.md](GETTING-STARTED.md) for a complete step-by-step walkthrough — prerequisites, startup, Docker/K8s deployment, and corrected API examples.
 
+> **Frustrated by JMeter's UI?** We were too. Your test plans are fully backwards-compatible — the frustration isn't. Modern UI, same `.jmx` files. Improvements incoming.
+
 ---
 
 ## Features
