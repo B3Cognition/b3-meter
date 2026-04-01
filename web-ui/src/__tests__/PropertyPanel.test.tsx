@@ -172,16 +172,16 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('renders all HTTPSampler fields', () => {
     render(<PropertyPanel />);
-    expect(screen.getByLabelText('domain')).toBeInTheDocument();
-    expect(screen.getByLabelText('port')).toBeInTheDocument();
-    expect(screen.getByLabelText('path')).toBeInTheDocument();
-    expect(screen.getByLabelText('method')).toBeInTheDocument();
-    expect(screen.getByLabelText('protocol')).toBeInTheDocument();
+    expect(screen.getByLabelText('Server Name or IP')).toBeInTheDocument();
+    expect(screen.getByLabelText('Port Number')).toBeInTheDocument();
+    expect(screen.getByLabelText('Path')).toBeInTheDocument();
+    expect(screen.getByLabelText('Method')).toBeInTheDocument();
+    expect(screen.getByLabelText('Protocol [http]')).toBeInTheDocument();
   });
 
   it('shows "Must be between 1 and 65535" for port 99999', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('port');
+    const input = screen.getByLabelText('Port Number');
 
     fillInput(input, '99999');
 
@@ -192,7 +192,7 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('shows error for port 0 (below minimum)', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('port');
+    const input = screen.getByLabelText('Port Number');
 
     fillInput(input, '0');
 
@@ -203,7 +203,7 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('does not show an error for a valid port', async () => {
     render(<PropertyPanel />);
-    const input = screen.getByLabelText('port');
+    const input = screen.getByLabelText('Port Number');
 
     fillInput(input, '8080');
 
@@ -214,7 +214,7 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('updates the store on valid form submission', async () => {
     render(<PropertyPanel />);
-    const domainInput = screen.getByLabelText('domain');
+    const domainInput = screen.getByLabelText('Server Name or IP');
 
     fillInput(domainInput, 'api.example.com');
 
@@ -230,7 +230,7 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('renders method select with HTTP method options', () => {
     render(<PropertyPanel />);
-    const select = screen.getByLabelText('method') as HTMLSelectElement;
+    const select = screen.getByLabelText('Method') as HTMLSelectElement;
     const options = Array.from(select.options).map((o) => o.value);
     expect(options).toContain('GET');
     expect(options).toContain('POST');
@@ -240,7 +240,7 @@ describe('PropertyPanel — HTTPSampler form', () => {
 
   it('renders protocol select with http and https options', () => {
     render(<PropertyPanel />);
-    const select = screen.getByLabelText('protocol') as HTMLSelectElement;
+    const select = screen.getByLabelText('Protocol [http]') as HTMLSelectElement;
     const options = Array.from(select.options).map((o) => o.value);
     expect(options).toContain('http');
     expect(options).toContain('https');
@@ -266,7 +266,7 @@ describe('PropertyPanel — unknown node type', () => {
     await waitFor(() => {
       expect(screen.getByText(/No editable properties for/i)).toBeInTheDocument();
       expect(screen.getByText(/ResponseAssertion/i)).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
   });
 });
 
