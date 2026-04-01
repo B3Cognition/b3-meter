@@ -326,9 +326,10 @@ public final class NodeInterpreter {
         int loops = extractThreadGroupLoops(tg);
 
         // Read JMX scheduler duration (ThreadGroup.scheduler + ThreadGroup.duration).
+        // JMX stores these as stringProp/boolProp — parse from string to handle both types.
         // API-provided durationSeconds takes precedence; JMX duration is the fallback.
-        boolean jmxScheduler = tg.getBoolProp("ThreadGroup.scheduler", false);
-        long jmxDurationSeconds = tg.getLongProp("ThreadGroup.duration");
+        boolean jmxScheduler = parseBool(tg, "ThreadGroup.scheduler");
+        long jmxDurationSeconds = parseLong(tg, "ThreadGroup.duration");
         long effectiveDurationMs;
         if (context.getDurationSeconds() > 0) {
             effectiveDurationMs = context.getDurationSeconds() * 1000L;
@@ -338,8 +339,8 @@ public final class NodeInterpreter {
             effectiveDurationMs = 0;
         }
 
-        // Read ramp-up period from JMX
-        int rampUpSeconds = tg.getIntProp("ThreadGroup.ramp_time", 0);
+        // Read ramp-up period from JMX (also stored as stringProp in standard JMX files)
+        int rampUpSeconds = (int) parseLong(tg, "ThreadGroup.ramp_time");
 
         LOG.log(Level.INFO, "NodeInterpreter: ThreadGroup [{0}] — {1} VU(s), {2} loop(s), duration={3}ms, ramp={4}s",
                 new Object[]{tg.getTestName(), numThreads, loops, effectiveDurationMs, rampUpSeconds});
@@ -1059,5 +1060,32 @@ public final class NodeInterpreter {
         }
         long safeLoops = (loops == Integer.MAX_VALUE) ? 10 : loops;
         return threads * safeLoops * TIMEOUT_PER_VU_ITER_S + 30;
+    }
+
+    /**
+     * Parses a boolean from a PlanNode property that may be stored as Boolean or String.
+     * JMX {@code <boolProp>} is parsed as Boolean by JmxTreeWalker, but some plans
+     * store it as {@code <stringProp>} with value "true"/"false".
+     */
+    private static boolean parseBool(PlanNode node, String propName) {
+        Object v = node.getProperties().get(propName);
+        if (v instanceof Boolean b) return b;
+        if (v instanceof String s) return "true".equalsIgnoreCase(s.trim());
+        return false;
+    }
+
+    /**
+     * Parses a long from a PlanNode property that may be stored as Number or String.
+     * JMX {@code <stringProp name="ThreadGroup.duration">300</stringProp>} stores
+     * duration as a String, not a number.
+     */
+    private static long parseLong(PlanNode node, String propName) {
+        Object v = node.getProperties().get(propName);
+        if (v instanceof Number n) return n.longValue();
+        if (v instanceof String s) {
+            try { return Long.parseLong(s.trim()); }
+            catch (NumberFormatException ignored) { return 0L; }
+        }
+        return 0L;
     }
 }

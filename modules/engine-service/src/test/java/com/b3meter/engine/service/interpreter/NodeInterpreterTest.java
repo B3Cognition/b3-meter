@@ -344,6 +344,159 @@ class NodeInterpreterTest {
     }
 
     // =========================================================================
+    // JMX scheduler + duration + ramp-up tests
+    // =========================================================================
+
+    @Test
+    void schedulerDuration_honorsJmxDuration_runsForConfiguredTime() throws Exception {
+        // JMX: loops=-1 (infinite), scheduler=true, duration=3s
+        // Expected: runs ~3 seconds, produces many samples (not just 5)
+        String jmx = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <jmeterTestPlan version="1.2">
+                  <hashTree>
+                    <TestPlan testclass="TestPlan" testname="Duration Test"/>
+                    <hashTree>
+                      <ThreadGroup testclass="ThreadGroup" testname="Timed Group">
+                        <intProp name="ThreadGroup.num_threads">2</intProp>
+                        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+                        <stringProp name="ThreadGroup.duration">3</stringProp>
+                        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+                        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+                          <intProp name="LoopController.loops">-1</intProp>
+                        </elementProp>
+                      </ThreadGroup>
+                      <hashTree>
+                        <HTTPSamplerProxy testclass="HTTPSamplerProxy" testname="GET">
+                          <stringProp name="HTTPSampler.domain">example.com</stringProp>
+                          <stringProp name="HTTPSampler.path">/</stringProp>
+                          <stringProp name="HTTPSampler.method">GET</stringProp>
+                        </HTTPSamplerProxy>
+                        <hashTree/>
+                      </hashTree>
+                    </hashTree>
+                  </hashTree>
+                </jmeterTestPlan>
+                """;
+
+        PlanNode root = JmxTreeWalker.parse(jmx);
+        NodeInterpreter interpreter = new NodeInterpreter(
+                StubInterpreterFactory.noOpHttpClient(),
+                StubInterpreterFactory.capturingBroker());
+
+        // context has durationSeconds=0 (not set via API) — JMX scheduler should take over
+        TestRunContext ctx = context("sched-1", 2);
+
+        long startMs = System.currentTimeMillis();
+        TestRunResult result = interpreter.execute(root, ctx);
+        long elapsedMs = System.currentTimeMillis() - startMs;
+
+        // Should have run for approximately 3 seconds (tolerance: 2-6s for CI variance)
+        assertTrue(elapsedMs >= 2000, "expected at least 2s elapsed, got " + elapsedMs + "ms");
+        assertTrue(elapsedMs < 8000, "expected less than 8s elapsed, got " + elapsedMs + "ms");
+
+        // With 2 VUs running infinite loops for 3s against a no-op client, expect many samples
+        assertTrue(result.totalSamples() > 10,
+                "expected >10 samples from 3s timed run, got " + result.totalSamples());
+    }
+
+    @Test
+    void schedulerDuration_apiOverridesJmx() throws Exception {
+        // JMX says duration=60s, but API context says durationSeconds=2
+        // Expected: stops at ~2s (API wins)
+        String jmx = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <jmeterTestPlan version="1.2">
+                  <hashTree>
+                    <TestPlan testclass="TestPlan" testname="Override Test"/>
+                    <hashTree>
+                      <ThreadGroup testclass="ThreadGroup" testname="Long Group">
+                        <intProp name="ThreadGroup.num_threads">1</intProp>
+                        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+                        <stringProp name="ThreadGroup.duration">60</stringProp>
+                        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+                          <intProp name="LoopController.loops">-1</intProp>
+                        </elementProp>
+                      </ThreadGroup>
+                      <hashTree>
+                        <HTTPSamplerProxy testclass="HTTPSamplerProxy" testname="GET">
+                          <stringProp name="HTTPSampler.domain">example.com</stringProp>
+                          <stringProp name="HTTPSampler.path">/</stringProp>
+                          <stringProp name="HTTPSampler.method">GET</stringProp>
+                        </HTTPSamplerProxy>
+                        <hashTree/>
+                      </hashTree>
+                    </hashTree>
+                  </hashTree>
+                </jmeterTestPlan>
+                """;
+
+        PlanNode root = JmxTreeWalker.parse(jmx);
+        NodeInterpreter interpreter = new NodeInterpreter(
+                StubInterpreterFactory.noOpHttpClient(),
+                StubInterpreterFactory.capturingBroker());
+
+        // API sets durationSeconds=2 — should override JMX's 60s
+        TestRunContext ctx = TestRunContext.builder()
+                .runId("override-1")
+                .planPath("test.jmx")
+                .virtualUsers(1)
+                .durationSeconds(2)
+                .uiBridge(StubInterpreterFactory.noOpUiBridge())
+                .build();
+
+        long startMs = System.currentTimeMillis();
+        interpreter.execute(root, ctx);
+        long elapsedMs = System.currentTimeMillis() - startMs;
+
+        // Must stop well before the JMX 60s — should be ~2s
+        assertTrue(elapsedMs < 8000,
+                "API override should stop at ~2s, but ran for " + elapsedMs + "ms");
+    }
+
+    @Test
+    void noScheduler_loopCountRespected() throws Exception {
+        // JMX: scheduler=false (default), loops=3
+        // Expected: exactly 3 samples per VU, finishes quickly
+        String jmx = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <jmeterTestPlan version="1.2">
+                  <hashTree>
+                    <TestPlan testclass="TestPlan" testname="Loop Test"/>
+                    <hashTree>
+                      <ThreadGroup testclass="ThreadGroup" testname="Loop Group">
+                        <intProp name="ThreadGroup.num_threads">1</intProp>
+                        <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+                          <intProp name="LoopController.loops">3</intProp>
+                        </elementProp>
+                      </ThreadGroup>
+                      <hashTree>
+                        <HTTPSamplerProxy testclass="HTTPSamplerProxy" testname="GET">
+                          <stringProp name="HTTPSampler.domain">example.com</stringProp>
+                          <stringProp name="HTTPSampler.path">/</stringProp>
+                          <stringProp name="HTTPSampler.method">GET</stringProp>
+                        </HTTPSamplerProxy>
+                        <hashTree/>
+                      </hashTree>
+                    </hashTree>
+                  </hashTree>
+                </jmeterTestPlan>
+                """;
+
+        PlanNode root = JmxTreeWalker.parse(jmx);
+        NodeInterpreter interpreter = new NodeInterpreter(
+                StubInterpreterFactory.noOpHttpClient(),
+                StubInterpreterFactory.capturingBroker());
+
+        TestRunContext ctx = context("loop-1", 1);
+        TestRunResult result = interpreter.execute(root, ctx);
+
+        // 1 VU × 3 loops × 1 sampler = 3 samples
+        assertEquals(3, result.totalSamples(),
+                "expected exactly 3 samples from loop-count plan");
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
