@@ -325,27 +325,51 @@ public final class NodeInterpreter {
         // Read loop count from the ThreadGroup's embedded LoopController
         int loops = extractThreadGroupLoops(tg);
 
-        LOG.log(Level.INFO, "NodeInterpreter: ThreadGroup [{0}] — {1} VU(s), {2} loop(s)",
-                new Object[]{tg.getTestName(), numThreads, loops});
+        // Read JMX scheduler duration (ThreadGroup.scheduler + ThreadGroup.duration).
+        // API-provided durationSeconds takes precedence; JMX duration is the fallback.
+        boolean jmxScheduler = tg.getBoolProp("ThreadGroup.scheduler", false);
+        long jmxDurationSeconds = tg.getLongProp("ThreadGroup.duration");
+        long effectiveDurationMs;
+        if (context.getDurationSeconds() > 0) {
+            effectiveDurationMs = context.getDurationSeconds() * 1000L;
+        } else if (jmxScheduler && jmxDurationSeconds > 0) {
+            effectiveDurationMs = jmxDurationSeconds * 1000L;
+        } else {
+            effectiveDurationMs = 0;
+        }
+
+        // Read ramp-up period from JMX
+        int rampUpSeconds = tg.getIntProp("ThreadGroup.ramp_time", 0);
+
+        LOG.log(Level.INFO, "NodeInterpreter: ThreadGroup [{0}] — {1} VU(s), {2} loop(s), duration={3}ms, ramp={4}s",
+                new Object[]{tg.getTestName(), numThreads, loops, effectiveDurationMs, rampUpSeconds});
 
         CountDownLatch latch = new CountDownLatch(numThreads);
 
         try (VirtualUserExecutor vuExec = new VirtualUserExecutor(context)) {
             for (int i = 0; i < numThreads; i++) {
                 final int vuIdx = i;
+                // Stagger VU start times according to ramp-up period
+                final long rampDelayMs = rampUpSeconds > 0 && numThreads > 1
+                        ? (long) rampUpSeconds * 1000L * vuIdx / (numThreads - 1) : 0;
                 vuExec.submitVirtualUser(() -> {
                     try {
-                        long durationMs = context.getDurationSeconds() > 0
-                                ? context.getDurationSeconds() * 1000L : 0;
-                        List<SampleResult> vuResults = runVirtualUser(tg, loops, durationMs, context.getRunId());
+                        if (rampDelayMs > 0) {
+                            Thread.sleep(rampDelayMs);
+                        }
+                        List<SampleResult> vuResults = runVirtualUser(tg, loops, effectiveDurationMs, context.getRunId());
                         collector.addAll(vuResults);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     } finally {
                         latch.countDown();
                     }
                 });
             }
 
-            long timeoutS = computeTimeout(context, numThreads, loops);
+            long timeoutS = effectiveDurationMs > 0
+                    ? (effectiveDurationMs / 1000) + rampUpSeconds + 30
+                    : computeTimeout(context, numThreads, loops);
             boolean done = latch.await(timeoutS, TimeUnit.SECONDS);
             if (!done) {
                 LOG.log(Level.WARNING,
