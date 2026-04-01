@@ -64,6 +64,79 @@ jobs:
         working-directory: web-ui
         run: npm run build
 
+  smoke-test:
+    needs: [backend-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ hashFiles('**/*.gradle.kts') }}
+
+      - name: Build backend
+        run: ./gradlew :modules:web-api:classes :modules:engine-adapter:classes
+
+      - name: Start mock servers
+        run: |
+          docker compose --env-file .env.test -f docker-compose.test.yml up -d
+          echo "Waiting for mock servers to become healthy..."
+          for i in $(seq 1 30); do
+            HEALTHY=$(docker ps --filter "name=b3-meter" --filter "health=healthy" -q | wc -l)
+            TOTAL=$(docker ps --filter "name=b3-meter" -q | wc -l)
+            echo "  $HEALTHY/$TOTAL healthy"
+            [ "$HEALTHY" -eq "$TOTAL" ] && [ "$TOTAL" -gt 0 ] && break
+            sleep 2
+          done
+
+      - name: Start backend
+        run: |
+          ./gradlew :modules:web-api:bootRun &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1 && break
+            sleep 2
+          done
+          echo "Backend is UP"
+
+      - name: Verify all mock servers UP
+        run: |
+          STATUS=$(curl -sf http://localhost:8080/api/v1/mocks/status)
+          UP=$(echo "$STATUS" | python3 -c "import json,sys; d=json.load(sys.stdin); print(sum(1 for v in d.values() if v['status']=='up'))")
+          TOTAL=$(echo "$STATUS" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))")
+          echo "Mock servers: $UP/$TOTAL UP"
+          [ "$UP" -eq "$TOTAL" ] || { echo "FAIL: not all mock servers are UP"; echo "$STATUS" | python3 -m json.tool; exit 1; }
+
+      - name: Run 13-protocol smoke test
+        run: |
+          RESULT=$(curl -sf -X POST http://localhost:8080/api/v1/mocks/smoke)
+          PASSED=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['summary']['passed'])")
+          TOTAL=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['summary']['total'])")
+          SKIPPED=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['summary']['skipped'])")
+          FAILED=$(echo "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['summary']['failed'])")
+          echo "============================================"
+          echo "  SMOKE TEST: $PASSED/$TOTAL PASS"
+          echo "  Skipped: $SKIPPED | Failed: $FAILED"
+          echo "============================================"
+          echo "$RESULT" | python3 -c "
+          import json,sys
+          for r in json.load(sys.stdin)['results']:
+            icon = 'PASS' if r['status']=='PASS' else 'SKIP' if r['status']=='SKIP' else 'FAIL'
+            print(f'  {icon}  {r[\"plan\"]}')
+          "
+          [ "$SKIPPED" -eq 0 ] && [ "$FAILED" -eq 0 ] || { echo "FAIL: smoke test had skips or failures"; exit 1; }
+
+      - name: Cleanup
+        if: always()
+        run: docker compose --env-file .env.test -f docker-compose.test.yml down
+
   docker-build:
     needs: [spotless-check, backend-test, frontend-test]
     runs-on: ubuntu-latest
